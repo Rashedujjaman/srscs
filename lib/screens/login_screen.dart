@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// import 'package:provider/provider.dart';
 import 'package:srscs/screens/register_screen.dart';
 import 'package:srscs/services/authentication_service.dart';
 import 'package:srscs/widgets/custom_text_form_field.dart';
@@ -87,12 +87,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         //Logo of the app
                         const SizedBox(height: 50.0),
                         Image.asset(
-                          'assets/images/logo.jpg',
-                          width: 400,
+                          'assets/images/logo.jpeg',
+                          width: 150,
                           height: 150,
                           fit: BoxFit.cover,
                         ),
-                        const SizedBox(height: 100.0),
+                        const SizedBox(height: 50),
                         CustomTextFormField(
                           label: 'Email',
                           controller: _emailController,
@@ -118,85 +118,75 @@ class _LoginScreenState extends State<LoginScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 100.0),
-                        SizedBox(
-                          width:
-                              double.infinity, // Button width spans full width
-                          child: ElevatedButton(
-                            onPressed: () {
-                              _formKey.currentState!.validate() == true &&
-                                      !_isLoading
-                                  ? login()
-                                  : null;
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            _formKey.currentState!.validate() == true &&
+                                    !_isLoading
+                                ? login()
+                                : null;
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 16.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
                             ),
-                            child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  )
-                                : const Text(
-                                    'Sign In',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                    ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
                                   ),
-                          ),
-                        ),
-                        const SizedBox(height: 10.0),
-                        SizedBox(
-                          width:
-                              double.infinity, // Button width spans full width
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return const RegisterScreen();
-                                  },
+                                )
+                              : const Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                255,
-                                255,
-                                255,
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              side: const BorderSide(
-                                color: Colors.amber,
-                                width: 1,
-                              ),
-                            ),
-                            child: const Text(
-                              'Sign Up',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.amber,
-                              ),
-                            ),
-                          ),
                         ),
+
                         const SizedBox(height: 16.0),
                         TextButton(
                           onPressed: () {},
                           child: const Text(
-                            'Forgot Password?',
-                            style: TextStyle(color: Colors.white),
+                            'Click Here To Reset Your Password',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ),
+                        const SizedBox(height: 50.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Don\'t have an account?'),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const RegisterScreen(),
+                                  ),
+                                );
+                              },
+                              onHover: null,
+                              child: const Text(
+                                'Sign Up',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 50.0),
+                        const Text(
+                          'Policy & Terms and Conditions.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
                           ),
                         ),
                       ],
@@ -208,6 +198,14 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: null,
+        tooltip: 'Change Language',
+        backgroundColor: Colors.white,
+        elevation: 0,
+        child: const Text('EN/BN'),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 }
