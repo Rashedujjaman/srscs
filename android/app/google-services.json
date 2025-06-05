@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "941486798444",
+    "project_id": "srscs-944ae",
+    "storage_bucket": "srscs-944ae.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941486798444:android:71ac93514f615375d44a49",
+        "android_client_info": {
+          "package_name": "com.example.srscs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClDe9ipxnuyR0bTb-qUp97ognJiTyBjjo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
