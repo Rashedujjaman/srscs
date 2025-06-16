@@ -17,7 +17,9 @@ class FirebaseService {
         .get();
     if (user.exists) {
       final data = user.data()!;
-      if (data['dob'] == dateOfBirth) {
+      final String dob = DateFormat('dd/MM/yyyy')
+          .format(DateFormat('dd/MM/yyyy').parse(dateOfBirth));
+      if (data['dob'] == dob) {
         return {
           'firstName': data['firstName'],
           'lastName': data['lastName'],
@@ -31,11 +33,14 @@ class FirebaseService {
   }
 
   Future<void> registerEntry(
+    String nidNumber,
     String firstName,
     String lastName,
     String email,
     String phoneNumber,
-    uid,
+    String uid,
+    String address,
+    String dob,
   ) async {
     try {
       await firestore.collection('ApplicationUsers').doc(uid).set({
@@ -45,6 +50,9 @@ class FirebaseService {
         'phoneNumber': phoneNumber,
         'imageUrl': '',
         'isActive': true,
+        'nidNumber': nidNumber,
+        'address': address,
+        'dob': DateFormat('dd/MM/yyyy').parse(dob),
       });
     } catch (e) {
       rethrow;

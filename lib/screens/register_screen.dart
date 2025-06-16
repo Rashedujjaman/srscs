@@ -5,6 +5,7 @@ import 'package:srscs/services/authentication_service.dart';
 // import 'package:srscs/services/snackbar_service.dart';
 // import 'package:srscs/theme/gradient_provider.dart';
 import 'package:srscs/widgets/custom_text_form_field.dart';
+import 'package:srscs/screens/login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   final String nidNumber;
@@ -64,8 +65,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> register() async {
-    final String firstName = _firstName;
-    final String lastName = _lastName;
     final String phoneNumber = _phoneNumberController.text;
     final String email = _emailController.text;
     final String password = _passwordController.text;
@@ -77,23 +76,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
         String uid = await AuthenticationService().createUser(email, password);
 
         await FirebaseService().registerEntry(
-          firstName,
-          lastName,
+          _nidNumber,
+          _firstName,
+          _lastName,
           email,
           phoneNumber,
           uid,
+          _address,
+          _dateOfBirth,
         );
 
         if (mounted) {
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => const LoginScreen()),
-          // );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
           // SnackbarService().successMessage(context, 'Registration Successful!');
+          AlertDialog(
+            title: const Text('Registration Successful'),
+            content: const Text('You can now log in with your credentials.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
+                  );
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
         }
       } catch (e) {
         if (mounted) {
           // SnackbarService().errorMessage(context, e.toString());
+          AlertDialog(
+            title: const Text('Registration Failed'),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
         }
       }
     }
@@ -276,7 +306,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ElevatedButton(
                               onPressed: () {
                                 if (_formKey.currentState?.validate() == true) {
-                                  // Handle form submission
+                                  register();
                                 }
                               },
                               style: ElevatedButton.styleFrom(
