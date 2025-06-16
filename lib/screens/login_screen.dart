@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:srscs/screens/nid_verify_screen.dart';
-// import 'package:provider/provider.dart';
-import 'package:srscs/screens/register_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:srscs/screens/dashboard_screen.dart';
 import 'package:srscs/services/authentication_service.dart';
+import 'package:srscs/services/snackbar_service.dart';
+import 'package:srscs/services/user_provider.dart';
 import 'package:srscs/widgets/custom_text_form_field.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,24 +44,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_formKey.currentState!.validate()) {
       try {
-        String uid = await AuthenticationService().signIn(email, password);
+        final uid = await AuthenticationService().signIn(email, password);
 
         if (mounted) {
           // Set the user ID in the provider
-          // Provider.of<UserProvider>(context, listen: false).setUserId(uid);
+          Provider.of<UserProvider>(context, listen: false).setUserId(uid);
 
           // Navigate to the main screen
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => const DashboardScreen(),
-          //   ),
-          // );
-          // SnackbarService().successMessage(context, 'Login successful!');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const DashboardScreen(),
+            ),
+          );
+          SnackbarService().successMessage(context, 'Login successful!');
         }
       } catch (e) {
         if (mounted) {
-          // SnackbarService().errorMessage(context, e.toString());
+          SnackbarService().errorMessage(context, e.toString());
         }
       }
     }

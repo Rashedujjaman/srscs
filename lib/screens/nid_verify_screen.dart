@@ -1,11 +1,9 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:srscs/screens/login_screen.dart';
 import 'package:srscs/screens/register_screen.dart';
-import 'package:srscs/services/authentication_service.dart';
 import 'package:srscs/services/firebase_service.dart';
-// import 'package:srscs/services/authentication_service.dart';
-// import 'package:srscs/services/snackbar_service.dart';
-// import 'package:srscs/theme/gradient_provider.dart';
+import 'package:srscs/services/snackbar_service.dart';
 import 'package:srscs/widgets/custom_text_form_field.dart';
 
 class NidVerifyScreen extends StatefulWidget {
@@ -20,6 +18,21 @@ class _NidVerifyScreenState extends State<NidVerifyScreen> {
   final TextEditingController _dateOfBirthController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  String? _validateDateOfBirth(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your Date of Birth';
+    }
+    try {
+      final date = DateFormat('dd/MM/yyyy').parseStrict(value);
+      if (date.isAfter(DateTime.now())) {
+        return 'Date of Birth cannot be in the future';
+      }
+    } catch (e) {
+      return 'Please enter a valid date in DD/MM/YYYY format';
+    }
+    return null;
+  }
+
   bool _isLoading = false;
   //************************************************************************************************************* */
 
@@ -33,34 +46,62 @@ class _NidVerifyScreenState extends State<NidVerifyScreen> {
       _isLoading = true;
     });
 
-    // Call the Firebase service to verify NID
-    final result = await FirebaseService().verifyNID(
-      _nidController.text,
-      _dateOfBirthController.text,
-    );
+    try {
+      // Call the Firebase service to verify NID
+      final user = await FirebaseService().verifyNID(_nidController.text);
 
-    setState(() {
-      _isLoading = false;
-    });
+      setState(() {
+        _isLoading = false;
+      });
 
-    if (result != null) {
-      // If verification is successful, navigate to the next screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => RegisterScreen(
-              nidNumber: _nidController.text,
-              dateOfBirth: _dateOfBirthController.text,
-              firstName: result['firstName'] ?? '',
-              lastName: result['lastName'] ?? '',
-              address: result['address'] ?? ''),
-        ),
-      );
-    } else {
-      // Show an error message if verification fails
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('NID verification failed')),
-      );
+      if (user != null) {
+        String dob = DateFormat('dd/MM/yyyy').format(
+          DateFormat('dd/MM/yyyy').parseStrict(_dateOfBirthController.text),
+        );
+        // Check if the date of birth matches
+        if (user['dob'] != dob) {
+          if (mounted) {
+            // Show an error message if the date of birth does not match
+            SnackbarService().errorMessage(
+              context,
+              'Date of Birth does not match with NID.',
+            );
+          }
+          return;
+        }
+        // If verification is successful, navigate to the next screen
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RegisterScreen(
+                nidNumber: _nidController.text,
+                dateOfBirth: dob,
+                firstName: user['firstName'] ?? '',
+                lastName: user['lastName'] ?? '',
+                address: user['address'] ?? '',
+                imageUrl: user['imageUrl'] ?? '',
+              ),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          // Show an error message if verification fails
+          SnackbarService().errorMessage(
+            context,
+            'NID number not found.',
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        // Show an error message if an exception occurs
+        SnackbarService().errorMessage(context, e.toString());
+      }
     }
   }
 
@@ -84,7 +125,7 @@ class _NidVerifyScreenState extends State<NidVerifyScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 50.0),
+                        const SizedBox(height: 100),
                         const Text('Create a new account',
                             style: TextStyle(
                               color: Colors.black,
@@ -102,7 +143,7 @@ class _NidVerifyScreenState extends State<NidVerifyScreen> {
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        const SizedBox(height: 50.0),
+                        const SizedBox(height: 100),
                         CustomTextFormField(
                           label: 'NID Number',
                           keyboardType: TextInputType.number,
@@ -115,18 +156,12 @@ class _NidVerifyScreenState extends State<NidVerifyScreen> {
                           },
                         ),
                         const SizedBox(height: 16.0),
-                        // Last Name Field
                         CustomTextFormField(
                           label: 'Date of Birth (DD/MM/YYYY)',
                           controller: _dateOfBirthController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your Date of Birth';
-                            }
-                            return null;
-                          },
+                          validator: (value) => _validateDateOfBirth(value),
                         ),
-                        const SizedBox(height: 16.0),
+                        const SizedBox(height: 50.0),
 
                         ElevatedButton(
                           onPressed: () {
@@ -156,7 +191,7 @@ class _NidVerifyScreenState extends State<NidVerifyScreen> {
                                   ),
                                 ),
                         ),
-                        const SizedBox(height: 16.0),
+                        const SizedBox(height: 100),
                         // Navigate to Login Screen
                         TextButton(
                           onPressed: () {

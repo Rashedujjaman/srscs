@@ -13,13 +13,15 @@ class RegisterScreen extends StatefulWidget {
   final String firstName;
   final String lastName;
   final String address;
+  final String imageUrl;
   const RegisterScreen(
       {super.key,
       required this.nidNumber,
       required this.dateOfBirth,
       required this.firstName,
       required this.lastName,
-      required this.address});
+      required this.address,
+      required this.imageUrl});
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
@@ -38,6 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late String _firstName;
   late String _lastName;
   late String _address;
+  late String _imageUrl;
 
   bool _isLoading = false;
   //*************************************************************************************************************************** */
@@ -62,6 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _firstName = widget.firstName;
     _lastName = widget.lastName;
     _address = widget.address;
+    _imageUrl = widget.imageUrl;
   }
 
   Future<void> register() async {
@@ -84,6 +88,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           uid,
           _address,
           _dateOfBirth,
+          _imageUrl,
         );
 
         if (mounted) {
@@ -155,82 +160,105 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const SizedBox(height: 20.0),
-
                         Card(
+                          color: Colors.white,
                           margin: const EdgeInsets.symmetric(
                               vertical: 0, horizontal: 0.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          elevation: 4.0,
+                          elevation: 1,
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'NID Verified Successfully',
-                                        style: TextStyle(
-                                          color: Colors.green,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'NID Verified',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
                                       ),
-                                      const SizedBox(height: 8.0),
-                                      Text(
-                                        'NID Number: $_nidNumber',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 8.0),
-                                      Text(
-                                        'Date of Birth: $_dateOfBirth',
-                                        style: const TextStyle(fontSize: 16),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 8.0),
-                                      Text(
-                                        'First Name: $_firstName',
-                                        style: const TextStyle(fontSize: 16),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 8.0),
-                                      Text(
-                                        'Last Name: $_lastName',
-                                        style: const TextStyle(fontSize: 16),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 8.0),
-                                      Text(
-                                        'Address: $_address',
-                                        style: const TextStyle(fontSize: 16),
-                                        softWrap: true,
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 2,
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green,
+                                      size: 25.0,
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 16.0),
-                                const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 32.0,
+                                const SizedBox(height: 10.0),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 30,
+                                      backgroundImage: NetworkImage(
+                                        _imageUrl,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10.0),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        spacing: 0,
+                                        children: [
+                                          Text(
+                                            'NID Number: $_nidNumber',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            'Date of Birth: $_dateOfBirth',
+                                            style:
+                                                const TextStyle(fontSize: 16),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            'First Name: $_firstName',
+                                            style:
+                                                const TextStyle(fontSize: 16),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            'Last Name: $_lastName',
+                                            style:
+                                                const TextStyle(fontSize: 16),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            'Address: $_address',
+                                            style:
+                                                const TextStyle(fontSize: 16),
+                                            softWrap: true,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 50.0),
-
+                        const SizedBox(height: 20.0),
                         Column(
                           children: [
                             // Phone Number Field
@@ -317,66 +345,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                               ),
-                              child: const Text(
-                                'Submit',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Submit',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                             )
                           ],
                         ),
-
-                        const SizedBox(height: 16.0),
-
-                        // ElevatedButton(
-                        //   onPressed: () {
-                        //     setState(() {
-                        //       _formKey.currentState?.validate();
-                        //     });
-                        //   },
-                        //   style: ElevatedButton.styleFrom(
-                        //     backgroundColor: Colors.grey,
-                        //     padding: const EdgeInsets.symmetric(
-                        //         vertical: 8.0, horizontal: 16.0),
-                        //     shape: RoundedRectangleBorder(
-                        //       borderRadius: BorderRadius.circular(8.0),
-                        //     ),
-                        //   ),
-                        //   child: _isLoading
-                        //       ? const CircularProgressIndicator(
-                        //           valueColor: AlwaysStoppedAnimation<Color>(
-                        //             Colors.white,
-                        //           ),
-                        //         )
-                        //       : const Text(
-                        //           'Verify NID',
-                        //           style: TextStyle(
-                        //             fontSize: 16,
-                        //             color: Colors.white,
-                        //           ),
-                        //         ),
-                        // ),
-                        // const SizedBox(height: 16.0),
-                        // Navigate to Login Screen
-                        // TextButton(
-                        //   onPressed: () {
-                        //     // navigate Register Screen
-                        //     Navigator.push(
-                        //       context,
-                        //       MaterialPageRoute(
-                        //         builder: (context) {
-                        //           return const LoginScreen();
-                        //         },
-                        //       ),
-                        //     );
-                        //   },
-                        //   child: const Text(
-                        //     'Already have an account? Login',
-                        //     style: TextStyle(color: Colors.grey),
-                        //   ),
-                        // ),
                       ],
                     ),
                   ),

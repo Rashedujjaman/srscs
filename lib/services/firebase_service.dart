@@ -10,26 +10,27 @@ class FirebaseService {
   FirebaseFirestore get firestore => FirebaseFirestore.instance;
 
   // Verify NID
-  Future<Map<String, String>?> verifyNID(String nid, String dateOfBirth) async {
-    final user = await FirebaseFirestore.instance
-        .collection('NIDRecords')
-        .doc(nid)
-        .get();
-    if (user.exists) {
-      final data = user.data()!;
-      final String dob = DateFormat('dd/MM/yyyy')
-          .format(DateFormat('dd/MM/yyyy').parse(dateOfBirth));
-      if (data['dob'] == dob) {
+  Future<Map<String, String>?> verifyNID(String nid) async {
+    try {
+      final user = await FirebaseFirestore.instance
+          .collection('NIDRecords')
+          .doc(nid)
+          .get();
+      if (user.exists) {
+        final data = user.data()!;
         return {
           'firstName': data['firstName'],
           'lastName': data['lastName'],
           'address': data['address'],
+          'dob': data['dob'],
+          'imageUrl': data['image'],
         };
-      } else {
-        return null;
       }
+
+      return null;
+    } catch (e) {
+      rethrow;
     }
-    return null;
   }
 
   Future<void> registerEntry(
@@ -41,6 +42,7 @@ class FirebaseService {
     String uid,
     String address,
     String dob,
+    String imageUrl,
   ) async {
     try {
       await firestore.collection('ApplicationUsers').doc(uid).set({
@@ -48,7 +50,7 @@ class FirebaseService {
         'lastName': lastName,
         'email': email,
         'phoneNumber': phoneNumber,
-        'imageUrl': '',
+        'imageUrl': imageUrl,
         'isActive': true,
         'nidNumber': nidNumber,
         'address': address,
