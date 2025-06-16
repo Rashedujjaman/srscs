@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:srscs/screens/nid_verify_screen.dart';
 // import 'package:provider/provider.dart';
 import 'package:srscs/screens/register_screen.dart';
 import 'package:srscs/services/authentication_service.dart';
@@ -168,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const RegisterScreen(),
+                                        const NidVerifyScreen(),
                                   ),
                                 );
                               },

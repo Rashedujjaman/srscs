@@ -12,6 +12,7 @@ class CustomTextFormField extends StatelessWidget {
   final String? Function(String?)? validator;
   final bool? readOnly;
   final bool? enabled;
+  final String? initialValue;
 
   const CustomTextFormField({
     Key? key,
@@ -26,11 +27,13 @@ class CustomTextFormField extends StatelessWidget {
     this.validator,
     this.readOnly,
     this.enabled,
+    this.initialValue,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      initialValue: initialValue,
       enabled: enabled ?? true,
       readOnly: readOnly ?? false,
       controller: controller,
