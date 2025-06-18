@@ -60,7 +60,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   icon: const Icon(Icons.notifications),
                   tooltip: 'Notifications',
                   onPressed: () {
-                    // Handle notification button press
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => NotificationScreen(),
+                    //   ),
+                    // );
                   },
                 ),
               ],
