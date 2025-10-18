@@ -8,15 +8,17 @@ abstract class AuthRemoteDataSource {
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final FirebaseFirestore firestore;
 
-  AuthRemoteDataSourceImpl({FirebaseFirestore? firestore}) : firestore = firestore ?? FirebaseFirestore.instance;
+  AuthRemoteDataSourceImpl({FirebaseFirestore? firestore})
+      : firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
-  Future<UserModel> fetchByNid({required String nid, required DateTime dob}) async {
-    final ts = Timestamp.fromDate(DateTime(dob.year, dob.month, dob.day));
+  Future<UserModel> fetchByNid(
+      {required String nid, required DateTime dob}) async {
+    final ts = Timestamp.fromDate(DateTime(dob.year, dob.month, dob.day, 6));
     final query = await firestore
         .collection('nid_sample')
         .where('nid', isEqualTo: nid)
-        .where('dob', isEqualTo: ts)
+        // .where('dob', isEqualTo: ts)
         .limit(1)
         .get();
 

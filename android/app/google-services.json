@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "518701479565",
-    "project_id": "srscs-c2574",
-    "storage_bucket": "srscs-c2574.firebasestorage.app"
+    "project_number": "460284440327",
+    "project_id": "srscs-58227",
+    "storage_bucket": "srscs-58227.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:518701479565:android:563580aba05467d71dd4c4",
+        "mobilesdk_app_id": "1:460284440327:android:056d4ffaee23f2c646dfa2",
         "android_client_info": {
           "package_name": "com.example.srscs"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAvzuSeBZz1Jh5ow2vDXGB4vGcNMQAuI7E"
+          "current_key": "AIzaSyBw4lWIuQhGQd5MFbDnbyIt36u6USKBn34"
         }
       ],
       "services": {
