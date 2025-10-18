@@ -118,6 +118,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: const Text("Submit Complaint"),
         backgroundColor: const Color(0xFF9F7AEA),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: 0,
+        selectedItemColor: const Color(0xFF9F7AEA),
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              // Already on dashboard
+              break;
+            case 1:
+              Get.toNamed('/tracking');
+              break;
+            case 2:
+              Get.toNamed('/chat');
+              break;
+            case 3:
+              Get.toNamed('/profile');
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.track_changes),
+            label: 'Track',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: 'Chat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 

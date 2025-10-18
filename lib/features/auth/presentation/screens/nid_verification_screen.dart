@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'register_screen.dart';
 
 class NIDVerificationScreen extends StatefulWidget {
@@ -53,46 +54,27 @@ class _NIDVerificationScreenState extends State<NIDVerificationScreen> {
       return;
     }
 
+    // call provider usecase
+    final auth = Provider.of<AuthProvider>(context, listen: false);
     setState(() => _isLoading = true);
+    await auth.verify(nid, parsedDob);
 
-    try {
-      final nidResult = await FirebaseFirestore.instance
-          .collection('nid_sample')
-          .where('nid', isEqualTo: nid)
-          .where('dob', isEqualTo: Timestamp.fromDate(parsedDob))
-          .get();
+    setState(() => _isLoading = false);
 
-      if (nidResult.docs.isEmpty) {
-        _showSnackBar("No matching NID found", isError: true);
-        return;
-      }
+    if (auth.state == AuthState.error) {
+      _showSnackBar(auth.errorMessage ?? 'Verification failed', isError: true);
+      return;
+    }
 
-      final userData = nidResult.docs.first.data();
-
-      final existing = await FirebaseFirestore.instance
-          .collection('citizens')
-          .where('nid', isEqualTo: nid)
-          .limit(1)
-          .get();
-
-      if (existing.docs.isNotEmpty) {
-        _showSnackBar(
-            "Account already exists. Please log in or reset your password.",
-            isError: true);
-        return;
-      }
-
+    if (auth.state == AuthState.success && auth.verifiedUser != null) {
+      final u = auth.verifiedUser!;
       Get.to(() => RegisterScreen(prefilledData: {
-            'nid': userData['nid'] ?? '',
-            'fullName': userData['fullName'] ?? '',
-            'dob': userData['dob'],
-            'address': userData['address'] ?? '',
-            'bloodGroup': userData['bloodGroup'] ?? '',
+            'nid': u.nid,
+            'fullName': u.fullName,
+            'dob': u.dob,
+            'address': u.address ?? '',
+            'bloodGroup': u.bloodGroup ?? '',
           }));
-    } catch (e) {
-      _showSnackBar("Error: ${e.toString()}", isError: true);
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
 
