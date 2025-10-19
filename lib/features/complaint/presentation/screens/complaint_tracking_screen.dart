@@ -17,7 +17,10 @@ class _ComplaintTrackingScreenState extends State<ComplaintTrackingScreen> {
   @override
   void initState() {
     super.initState();
-    _loadComplaints();
+    // Schedule loading after the first frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadComplaints();
+    });
   }
 
   Future<void> _loadComplaints() async {

@@ -14,7 +14,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> fetchByNid(
       {required String nid, required DateTime dob}) async {
-    final ts = Timestamp.fromDate(DateTime(dob.year, dob.month, dob.day, 6));
+    // final ts = Timestamp.fromDate(DateTime(dob.year, dob.month, dob.day, 6));
     final query = await firestore
         .collection('nid_sample')
         .where('nid', isEqualTo: nid)

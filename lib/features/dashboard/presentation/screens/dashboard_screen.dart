@@ -16,7 +16,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserFullName();
+    // Schedule loading after the first frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserFullName();
+    });
   }
 
   Future<void> _loadUserFullName() async {

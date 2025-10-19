@@ -21,37 +21,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-    _loadComplaints();
+    // Schedule loading after the first frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+      _loadComplaints();
+    });
   }
 
   Future<void> _loadUserData() async {
-    final uid = _auth.currentUser?.uid;
-    if (uid != null) {
-      final doc = await _firestore.collection('citizens').doc(uid).get();
-      if (doc.exists) {
-        setState(() {
-          _userData = doc.data();
-        });
-      } else {
-        print('No document found for UID: $uid');
+    try {
+      final uid = _auth.currentUser?.uid;
+      if (uid != null) {
+        final doc = await _firestore.collection('citizens').doc(uid).get();
+        if (doc.exists) {
+          setState(() {
+            _userData = doc.data();
+          });
+        } else {
+          print('No document found for UID: $uid');
+        }
       }
+    } catch (e) {
+      print('Error loading user data: $e');
     }
   }
 
   Future<void> _loadComplaints() async {
-    final uid = _auth.currentUser?.uid;
-    if (uid != null) {
-      final query = await _firestore
-          .collection('complaints')
-          .where('userId', isEqualTo: uid)
-          .orderBy('date', descending: true)
-          .limit(5)
-          .get();
+    try {
+      final uid = _auth.currentUser?.uid;
+      if (uid != null) {
+        final query = await _firestore
+            .collection('complaints')
+            .where('userId', isEqualTo: uid)
+            .orderBy('createdAt', descending: true)
+            .limit(5)
+            .get();
 
-      setState(() {
-        _recentComplaints = query.docs.map((doc) => doc.data()).toList();
-      });
+        setState(() {
+          _recentComplaints = query.docs.map((doc) => doc.data()).toList();
+        });
+      }
+    } catch (e) {
+      print('Error loading complaints: $e');
     }
   }
 
