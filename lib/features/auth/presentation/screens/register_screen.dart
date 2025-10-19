@@ -60,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ? dob
             : Timestamp.fromDate(DateTime.parse(dob.toString())),
         'address': address,
-        'bloodType': blood,
+        'bloodGroup': blood,
         'email': email,
         'phone': phone,
         'createdAt': Timestamp.now(),

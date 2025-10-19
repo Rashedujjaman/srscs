@@ -113,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Personal Info
                   _buildInfoRow("NID Number", _userData?['nid']),
                   _buildInfoRow("Address", _userData?['address']),
-                  _buildInfoRow("Blood Group", _userData?['bloodType']),
+                  _buildInfoRow("Blood Group", _userData?['bloodGroup']),
                   _buildInfoRow("Phone Number", _userData?['phone']),
                   _buildInfoRow("Email", _userData?['email']),
                   _buildInfoRow("Date of Birth", formattedDob),
