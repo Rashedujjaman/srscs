@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/complaint_entity.dart';
 import '../providers/complaint_provider.dart';
+import 'complaint_detail_screen.dart';
 
 class ComplaintTrackingScreen extends StatefulWidget {
   const ComplaintTrackingScreen({super.key});
@@ -86,109 +87,123 @@ class _ComplaintTrackingScreenState extends State<ComplaintTrackingScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header: Type and Status
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    complaint.typeText,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ComplaintDetailScreen(complaint: complaint),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header: Type and Status
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      complaint.typeText,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
+                  _buildStatusChip(complaint.status),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Description
+              Text(
+                complaint.description,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+              const SizedBox(height: 12),
+
+              // Location (if available)
+              if (complaint.location != null)
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Lat: ${complaint.location!['lat']!.toStringAsFixed(4)}, Lng: ${complaint.location!['lng']!.toStringAsFixed(4)}',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
                 ),
-                _buildStatusChip(complaint.status),
-              ],
-            ),
-            const SizedBox(height: 12),
 
-            // Description
-            Text(
-              complaint.description,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-            // Location (if available)
-            if (complaint.location != null)
+              // Date
               Row(
                 children: [
-                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                  const Icon(Icons.calendar_today,
+                      size: 16, color: Colors.grey),
                   const SizedBox(width: 4),
                   Text(
-                    'Lat: ${complaint.location!['lat']!.toStringAsFixed(4)}, Lng: ${complaint.location!['lng']!.toStringAsFixed(4)}',
+                    DateFormat('MMM dd, yyyy - hh:mm a')
+                        .format(complaint.createdAt),
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
 
-            const SizedBox(height: 8),
-
-            // Date
-            Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text(
-                  DateFormat('MMM dd, yyyy - hh:mm a')
-                      .format(complaint.createdAt),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-
-            // Media count
-            if (complaint.mediaUrls.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    const Icon(Icons.attach_file, size: 16, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${complaint.mediaUrls.length} file(s) attached',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Admin notes (if any)
-            if (complaint.adminNotes != null &&
-                complaint.adminNotes!.isNotEmpty)
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.info_outline,
-                        size: 16, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Admin Note: ${complaint.adminNotes}',
+              // Media count
+              if (complaint.mediaUrls.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.attach_file,
+                          size: 16, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${complaint.mediaUrls.length} file(s) attached',
                         style:
-                            const TextStyle(fontSize: 12, color: Colors.blue),
+                            const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-          ],
+
+              // Admin notes (if any)
+              if (complaint.adminNotes != null &&
+                  complaint.adminNotes!.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline,
+                          size: 16, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Admin Note: ${complaint.adminNotes}',
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
