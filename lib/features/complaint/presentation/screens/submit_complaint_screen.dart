@@ -61,33 +61,79 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
     setState(() => _isLoadingLocation = true);
 
     try {
-      // Check permission
-      var status = await Permission.location.status;
-      if (!status.isGranted) {
-        status = await Permission.location.request();
-      }
-
-      if (status.isGranted) {
-        final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showSnackBar(
+          'Location services are disabled. Please enable location in your device settings.',
+          isError: true,
         );
-
-        setState(() {
-          _location = {
-            'lat': position.latitude,
-            'lng': position.longitude,
-          };
-        });
-
-        _showSnackBar('Location tagged successfully', isError: false);
-      } else {
-        _showSnackBar('Location permission denied', isError: true);
+        setState(() => _isLoadingLocation = false);
+        return;
       }
+
+      // Check permission status
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          _showSnackBar('Location permission denied', isError: true);
+          setState(() => _isLoadingLocation = false);
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showLocationPermissionDialog();
+        setState(() => _isLoadingLocation = false);
+        return;
+      }
+
+      // Get current position
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      setState(() {
+        _location = {
+          'lat': position.latitude,
+          'lng': position.longitude,
+        };
+      });
+
+      _showSnackBar('Location tagged successfully', isError: false);
     } catch (e) {
-      _showSnackBar('Error getting location: $e', isError: true);
+      _showSnackBar('Error getting location: ${e.toString()}', isError: true);
     } finally {
       setState(() => _isLoadingLocation = false);
     }
+  }
+
+  void _showLocationPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Location Permission Required'),
+        content: const Text(
+          'Location permission is permanently denied. Please enable it from app settings to tag your complaint location.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              openAppSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _removeFile(int index) {

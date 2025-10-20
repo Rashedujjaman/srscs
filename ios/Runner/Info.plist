@@ -45,5 +45,15 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to tag the complaint location accurately</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to tag the complaint location accurately</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to capture photos of road safety issues</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photo library access to select images for complaints</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need microphone access to record audio evidence</string>
 </dict>
 </plist>

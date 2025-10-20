@@ -14,16 +14,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> fetchByNid(
       {required String nid, required DateTime dob}) async {
-    // final ts = Timestamp.fromDate(DateTime(dob.year, dob.month, dob.day, 6));
-    final query = await firestore
-        .collection('nid_sample')
-        .where('nid', isEqualTo: nid)
-        // .where('dob', isEqualTo: ts)
-        .limit(1)
-        .get();
+    try {
+      // final ts = Timestamp.fromDate(DateTime(dob.year, dob.month, dob.day, 6));
+      final query = await firestore
+          .collection('nid_sample')
+          .where('nid', isEqualTo: nid)
+          // .where('dob', isEqualTo: ts)
+          .limit(1)
+          .get();
 
-    if (query.docs.isEmpty) throw Exception('No matching NID found');
+      if (query.docs.isEmpty) {
+        throw Exception('No matching NID found');
+      }
 
-    return UserModel.fromFirestore(query.docs.first);
+      return UserModel.fromFirestore(query.docs.first);
+    } catch (e) {
+      print('Error in fetchByNid for NID $nid: $e');
+      if (e.toString().contains('No matching NID found')) {
+        rethrow;
+      }
+      throw Exception('Failed to verify NID: ${e.toString()}');
+    }
   }
 }
