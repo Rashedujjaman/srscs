@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../domain/entities/news_item.dart';
 
 class NewsCard extends StatelessWidget {
@@ -88,20 +87,31 @@ class NewsCard extends StatelessWidget {
 
                     const SizedBox(height: 4),
 
-                    // Source and date
+                    // Source
                     Row(
                       children: [
                         Icon(Icons.account_balance,
                             size: 12, color: Colors.grey[600]),
                         const SizedBox(width: 4),
-                        Text(
-                          news.source,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                        Expanded(
+                          child: Text(
+                            news.source,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                      ],
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // Time ago
+                    Row(
+                      children: [
                         Icon(Icons.access_time,
                             size: 12, color: Colors.grey[600]),
                         const SizedBox(width: 4),
@@ -113,17 +123,17 @@ class NewsCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                    ),
+                    )
                   ],
                 ),
               ),
 
               // Arrow icon
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
-              ),
+              // const Icon(
+              //   Icons.arrow_forward_ios,
+              //   size: 16,
+              //   color: Colors.grey,
+              // ),
             ],
           ),
         ),

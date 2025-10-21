@@ -110,7 +110,6 @@ class DashboardRemoteDataSource {
           .map((doc) => NewsItemModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('Error fetching news: $e');
       rethrow;
     }
   }
@@ -139,7 +138,6 @@ class DashboardRemoteDataSource {
 
       return notices;
     } catch (e) {
-      print('Error fetching notices: $e');
       rethrow;
     }
   }
@@ -155,7 +153,6 @@ class DashboardRemoteDataSource {
 
       return NoticeItemModel.fromFirestore(doc);
     } catch (e) {
-      print('Error fetching notice: $e');
       rethrow;
     }
   }
@@ -172,7 +169,6 @@ class DashboardRemoteDataSource {
         'readAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error marking notice as read: $e');
       rethrow;
     }
   }
@@ -199,7 +195,6 @@ class DashboardRemoteDataSource {
 
       return unreadCount;
     } catch (e) {
-      print('Error getting unread notice count: $e');
       return 0;
     }
   }

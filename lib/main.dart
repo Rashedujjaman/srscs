@@ -58,11 +58,17 @@ import 'features/chat/presentation/providers/chat_provider.dart';
 // Admin
 import 'features/admin/presentation/screens/admin_dashboard_screen.dart';
 
+// ONE-TIME DATABASE SEEDER (uncomment to run once, then comment out again)
+import 'features/dashboard/data/datasources/seed_dashboard_data.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // ⚠️ ONE-TIME SEEDING - UNCOMMENT BELOW, RUN ONCE, THEN COMMENT OUT AGAIN ⚠️
+  // await seedDashboardData();
 
   runApp(const MyApp());
 }

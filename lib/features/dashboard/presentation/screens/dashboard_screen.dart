@@ -456,7 +456,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     news.source,
                     style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
-                  const SizedBox(width: 16),
+                ],
+              ),
+
+              const SizedBox(height: 4),
+              Row(
+                children: [
                   Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 4),
                   Text(
@@ -542,7 +547,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: notice.affectedAreas!
-                      .map((area) => Chip(
+                      .map<Widget>((area) => Chip(
                             label: Text(area),
                             backgroundColor: Colors.grey[200],
                           ))
