@@ -53,12 +53,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       // Step 3: Save Firestore user data
       await FirebaseFirestore.instance.collection('citizens').doc(uid).set({
-        'uid': uid,
         'nid': nid,
         'fullName': fullName,
-        'dob': dob is Timestamp
-            ? dob
-            : Timestamp.fromDate(DateTime.parse(dob.toString())),
+        'dob': dob is Timestamp ? dob.toDate() : dob,
         'address': address,
         'bloodGroup': blood,
         'email': email,
@@ -110,6 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             _readonlyField("Full Name", data['fullName'] ?? ''),
             _readonlyField("Date of Birth", _formatDate(data['dob'])),
             _readonlyField("Address", data['address'] ?? ''),
+            _readonlyField("Blood Group", data['bloodGroup'] ?? ''),
             const SizedBox(height: 20),
             TextField(
               controller: _emailCtrl,

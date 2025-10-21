@@ -5,6 +5,9 @@ class UserEntity {
   final DateTime? dob;
   final String? address;
   final String? bloodGroup;
+  final String? imageUrl;
+  final String? phoneNumber;
+  final String? email;
 
   UserEntity({
     required this.id,
@@ -13,5 +16,8 @@ class UserEntity {
     this.dob,
     this.address,
     this.bloodGroup,
+    this.imageUrl,
+    this.phoneNumber,
+    this.email,
   });
 }

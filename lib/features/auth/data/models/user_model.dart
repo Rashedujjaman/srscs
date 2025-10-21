@@ -9,25 +9,34 @@ class UserModel extends UserEntity {
     DateTime? dob,
     String? address,
     String? bloodGroup,
+    String? imageUrl,
+    String? phoneNumber,
+    String? email,
   }) : super(
-            id: id,
-            nid: nid,
-            fullName: fullName,
-            dob: dob,
-            address: address,
-            bloodGroup: bloodGroup);
+          id: id,
+          nid: nid,
+          fullName: fullName,
+          dob: dob,
+          address: address,
+          bloodGroup: bloodGroup,
+          imageUrl: imageUrl,
+          phoneNumber: phoneNumber,
+          email: email,
+        );
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     final Timestamp? ts = data['dob'] as Timestamp?;
     return UserModel(
-      id: doc.id,
-      nid: data['nid']?.toString() ?? '',
-      fullName: data['fullName'] ?? '',
-      dob: ts?.toDate(),
-      address: data['address'],
-      bloodGroup: data['bloodGroup'],
-    );
+        id: doc.id,
+        nid: data['nid']?.toString() ?? '',
+        fullName: data['fullName'] ?? '',
+        dob: ts?.toDate(),
+        address: data['address'],
+        bloodGroup: data['bloodGroup'],
+        imageUrl: data['imageUrl'],
+        phoneNumber: data['phoneNumber'],
+        email: data['email']);
   }
 
   Map<String, dynamic> toFirestore() {
@@ -37,6 +46,9 @@ class UserModel extends UserEntity {
       'dob': dob != null ? Timestamp.fromDate(dob!) : null,
       'address': address,
       'bloodGroup': bloodGroup,
+      'imageUrl': imageUrl,
+      'phoneNumber': phoneNumber,
+      'email': email,
     };
   }
 }
