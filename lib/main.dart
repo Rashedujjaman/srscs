@@ -21,6 +21,14 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 
 // Dashboard & Profile
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'features/dashboard/data/datasources/dashboard_remote_data_source.dart';
+import 'features/dashboard/data/repositories/dashboard_repository_impl.dart';
+import 'features/dashboard/domain/usecases/get_dashboard_statistics.dart';
+import 'features/dashboard/domain/usecases/get_latest_news.dart';
+import 'features/dashboard/domain/usecases/get_active_notices.dart';
+import 'features/dashboard/domain/usecases/get_unread_notice_count.dart';
+import 'features/dashboard/presentation/providers/dashboard_provider.dart';
+
 import 'features/profile/presentation/screens/profile_screen.dart';
 import 'features/profile/data/datasources/profile_remote_data_source.dart';
 import 'features/profile/data/repositories/profile_repository_impl.dart';
@@ -102,6 +110,15 @@ class MyApp extends StatelessWidget {
     final updateProfileUsecase = UpdateProfile(profileRepo);
     final updateProfilePhotoUsecase = UpdateProfilePhoto(profileRepo);
 
+    // Dashboard dependencies
+    final dashboardRemote = DashboardRemoteDataSource(firestore: firestore);
+    final dashboardRepo =
+        DashboardRepositoryImpl(remoteDataSource: dashboardRemote);
+    final getDashboardStatisticsUsecase = GetDashboardStatistics(dashboardRepo);
+    final getLatestNewsUsecase = GetLatestNews(dashboardRepo);
+    final getActiveNoticesUsecase = GetActiveNotices(dashboardRepo);
+    final getUnreadNoticeCountUsecase = GetUnreadNoticeCount(dashboardRepo);
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -125,6 +142,15 @@ class MyApp extends StatelessWidget {
             getProfileUseCase: getProfileUsecase,
             updateProfileUseCase: updateProfileUsecase,
             updateProfilePhotoUseCase: updateProfilePhotoUsecase,
+            firebaseAuth: fb_auth.FirebaseAuth.instance,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => DashboardProvider(
+            getDashboardStatisticsUseCase: getDashboardStatisticsUsecase,
+            getLatestNewsUseCase: getLatestNewsUsecase,
+            getActiveNoticesUseCase: getActiveNoticesUsecase,
+            getUnreadNoticeCountUseCase: getUnreadNoticeCountUsecase,
             firebaseAuth: fb_auth.FirebaseAuth.instance,
           ),
         ),
