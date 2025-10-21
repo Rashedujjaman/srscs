@@ -508,6 +508,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Show notice details
   void _showNoticeDetails(BuildContext context, notice) {
+    // Mark notice as read
+    final dashboardProvider =
+        Provider.of<DashboardProvider>(context, listen: false);
+    dashboardProvider.markNoticeAsRead(notice.id);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

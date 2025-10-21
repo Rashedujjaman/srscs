@@ -161,7 +161,7 @@ class DashboardRemoteDataSource {
   Future<void> markNoticeAsRead(String userId, String noticeId) async {
     try {
       await firestore
-          .collection('users')
+          .collection('citizens')
           .doc(userId)
           .collection('readNotices')
           .doc(noticeId)
@@ -181,7 +181,7 @@ class DashboardRemoteDataSource {
 
       // Get read notices for user
       final readNoticesQuery = await firestore
-          .collection('users')
+          .collection('citizens')
           .doc(userId)
           .collection('readNotices')
           .get();

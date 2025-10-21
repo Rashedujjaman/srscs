@@ -7,12 +7,14 @@ import '../../domain/usecases/get_dashboard_statistics.dart';
 import '../../domain/usecases/get_latest_news.dart';
 import '../../domain/usecases/get_active_notices.dart';
 import '../../domain/usecases/get_unread_notice_count.dart';
+import '../../domain/usecases/mark_notice_as_read.dart';
 
 class DashboardProvider with ChangeNotifier {
   final GetDashboardStatistics getDashboardStatisticsUseCase;
   final GetLatestNews getLatestNewsUseCase;
   final GetActiveNotices getActiveNoticesUseCase;
   final GetUnreadNoticeCount getUnreadNoticeCountUseCase;
+  final MarkNoticeAsRead markNoticeAsReadUseCase;
   final FirebaseAuth firebaseAuth;
 
   DashboardProvider({
@@ -20,6 +22,7 @@ class DashboardProvider with ChangeNotifier {
     required this.getLatestNewsUseCase,
     required this.getActiveNoticesUseCase,
     required this.getUnreadNoticeCountUseCase,
+    required this.markNoticeAsReadUseCase,
     required this.firebaseAuth,
   });
 
@@ -167,5 +170,19 @@ class DashboardProvider with ChangeNotifier {
   /// Get recent news (published within last 7 days)
   List<NewsItem> get recentNews {
     return _newsList.where((news) => news.isRecent).toList();
+  }
+
+  /// Mark notice as read
+  Future<void> markNoticeAsRead(String noticeId) async {
+    final userId = currentUserId;
+    if (userId == null) return;
+
+    try {
+      await markNoticeAsReadUseCase.call(userId, noticeId);
+      // Reload unread count after marking as read
+      await loadUnreadNoticeCount();
+    } catch (e) {
+      print('Error marking notice as read: $e');
+    }
   }
 }
