@@ -18,14 +18,14 @@ class ComplaintDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Complaint Details'),
         backgroundColor: const Color(0xFF9F7AEA),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              // TODO: Implement share functionality
-            },
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.share),
+        //     onPressed: () {
+        //       // TODO: Implement share functionality
+        //     },
+        //   ),
+        // ],
       ),
       body: SingleChildScrollView(
         child: Column(

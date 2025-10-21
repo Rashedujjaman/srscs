@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:srscs/features/complaint/data/models/complaint_model.dart';
+import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -16,7 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Map<String, dynamic>? _userData;
-  List<Map<String, dynamic>> _recentComplaints = [];
+  List<ComplaintEntity> _recentComplaints = [];
 
   @override
   void initState() {
@@ -58,7 +60,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .get();
 
         setState(() {
-          _recentComplaints = query.docs.map((doc) => doc.data()).toList();
+          _recentComplaints = query.docs
+              .map((doc) => ComplaintModel.fromFirestore(doc))
+              .toList();
         });
       }
     } catch (e) {
@@ -152,9 +156,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   ..._recentComplaints.map((c) => ListTile(
-                        title: Text(c['title'] ?? 'Complaint'),
-                        subtitle: Text("Date: ${c['date'] ?? ''}"),
-                        trailing: Chip(label: Text(c['status'] ?? '')),
+                        title: Text(c.type.toString()),
+                        subtitle: Text("Date: ${c.createdAt}"),
+                        trailing: Chip(label: Text(c.status.toString())),
                       )),
 
                   const SizedBox(height: 30),
