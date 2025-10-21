@@ -156,9 +156,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   ..._recentComplaints.map((c) => ListTile(
-                        title: Text(c.type.toString()),
-                        subtitle: Text("Date: ${c.createdAt}"),
-                        trailing: Chip(label: Text(c.status.toString())),
+                        leading: Icon(
+                          _getComplaintIcon(c.type),
+                          color: const Color(0xFF9F7AEA),
+                        ),
+                        title: Text(c.typeText),
+                        subtitle: Text(
+                          "Date: ${DateFormat('MMM dd, yyyy').format(c.createdAt)}",
+                        ),
+                        trailing: Chip(
+                          label: Text(
+                            c.statusText,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          backgroundColor: _getStatusColor(c.status),
+                        ),
                       )),
 
                   const SizedBox(height: 30),
@@ -213,5 +225,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  IconData _getComplaintIcon(ComplaintType type) {
+    switch (type) {
+      case ComplaintType.pothole:
+        return Icons.warning;
+      case ComplaintType.brokenSign:
+        return Icons.broken_image;
+      case ComplaintType.streetlight:
+        return Icons.lightbulb_outline;
+      case ComplaintType.drainage:
+        return Icons.water_damage;
+      case ComplaintType.roadCrack:
+        return Icons.trending_down;
+      case ComplaintType.accident:
+        return Icons.car_crash;
+      case ComplaintType.other:
+        return Icons.report_problem;
+    }
+  }
+
+  Color _getStatusColor(ComplaintStatus status) {
+    switch (status) {
+      case ComplaintStatus.pending:
+        return Colors.orange.withOpacity(0.2);
+      case ComplaintStatus.underReview:
+        return Colors.blue.withOpacity(0.2);
+      case ComplaintStatus.inProgress:
+        return Colors.purple.withOpacity(0.2);
+      case ComplaintStatus.resolved:
+        return Colors.green.withOpacity(0.2);
+      case ComplaintStatus.rejected:
+        return Colors.red.withOpacity(0.2);
+    }
   }
 }
