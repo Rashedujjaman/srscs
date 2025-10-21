@@ -1,14 +1,15 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:srscs/features/complaint/data/models/complaint_model.dart';
 import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
+import '../../domain/entities/profile_entity.dart';
+import '../providers/profile_provider.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -19,10 +20,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  Map<String, dynamic>? _userData;
   List<ComplaintEntity> _recentComplaints = [];
 
   @override
@@ -30,32 +28,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     // Schedule loading after the first frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadUserData();
+      final profileProvider = context.read<ProfileProvider>();
+      profileProvider.loadProfile();
       _loadComplaints();
     });
   }
 
-  Future<void> _loadUserData() async {
-    try {
-      final uid = _auth.currentUser?.uid;
-      if (uid != null) {
-        final doc = await _firestore.collection('citizens').doc(uid).get();
-        if (doc.exists) {
-          setState(() {
-            _userData = doc.data();
-          });
-        } else {
-          print('No document found for UID: $uid');
-        }
-      }
-    } catch (e) {
-      print('Error loading user data: $e');
-    }
-  }
-
   Future<void> _loadComplaints() async {
     try {
-      final uid = _auth.currentUser?.uid;
+      final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
         final query = await _firestore
             .collection('complaints')
@@ -64,11 +45,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .limit(5)
             .get();
 
-        setState(() {
-          _recentComplaints = query.docs
-              .map((doc) => ComplaintModel.fromFirestore(doc))
-              .toList();
-        });
+        if (mounted) {
+          setState(() {
+            _recentComplaints = query.docs
+                .map((doc) => ComplaintModel.fromFirestore(doc))
+                .toList();
+          });
+        }
       }
     } catch (e) {
       print('Error loading complaints: $e');
@@ -77,39 +60,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final name = _userData?['fullName'] ?? 'Loading...';
-    final email = _userData?['email'] ?? '';
-    final imageUrl = _userData?['imageUrl'];
-
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: _userData == null
-          ? const Center(child: CircularProgressIndicator())
-          : CustomScrollView(
-              slivers: [
-                _buildAppBar(context, name, email, imageUrl),
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      _buildStatsCards(),
-                      const SizedBox(height: 20),
-                      _buildPersonalInfo(),
-                      const SizedBox(height: 16),
-                      _buildQuickActions(),
-                      const SizedBox(height: 16),
-                      _buildRecentComplaints(),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
+      body: Consumer<ProfileProvider>(
+        builder: (context, profileProvider, child) {
+          if (profileProvider.isLoading && profileProvider.profile == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final profile = profileProvider.profile;
+          if (profile == null) {
+            return const Center(
+              child: Text('Unable to load profile'),
+            );
+          }
+
+          return CustomScrollView(
+            slivers: [
+              _buildAppBar(context, profile, profileProvider),
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildStatsCards(),
+                    const SizedBox(height: 20),
+                    _buildPersonalInfo(profile),
+                    const SizedBox(height: 16),
+                    _buildQuickActions(),
+                    const SizedBox(height: 16),
+                    _buildRecentComplaints(),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context, String name, String email,
-      String? profilePhotoUrl) {
+  Widget _buildAppBar(
+      BuildContext context, ProfileEntity profile, ProfileProvider provider) {
     return SliverAppBar(
       expandedHeight: 280,
       pinned: true,
@@ -152,10 +144,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: CircleAvatar(
                           radius: 60,
                           backgroundColor: Colors.white,
-                          backgroundImage: profilePhotoUrl != null
-                              ? CachedNetworkImageProvider(profilePhotoUrl)
+                          backgroundImage: profile.profilePhotoUrl != null
+                              ? CachedNetworkImageProvider(
+                                  profile.profilePhotoUrl!)
                               : null,
-                          child: profilePhotoUrl == null
+                          child: profile.profilePhotoUrl == null
                               ? const Icon(Icons.person,
                                   size: 60, color: Color(0xFF9F7AEA))
                               : null,
@@ -165,7 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         bottom: 0,
                         right: 0,
                         child: GestureDetector(
-                          onTap: _updateProfilePhoto,
+                          onTap: () => _updateProfilePhoto(provider),
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
@@ -187,7 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    name,
+                    profile.fullName,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -196,7 +189,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    email,
+                    profile.email,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.white.withOpacity(0.9),
@@ -215,12 +208,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    EditProfileScreen(userData: _userData ?? {}),
+                builder: (context) => EditProfileScreen(profile: profile),
               ),
             );
             if (result == true) {
-              _loadUserData();
+              provider.loadProfile();
             }
           },
         ),
@@ -311,10 +303,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildPersonalInfo() {
-    final dob = _userData?['dob'];
-    final formattedDob =
-        dob is Timestamp ? DateFormat('dd MMM yyyy').format(dob.toDate()) : '';
+  Widget _buildPersonalInfo(ProfileEntity profile) {
+    final formattedDob = profile.dob != null
+        ? DateFormat('dd MMM yyyy').format(profile.dob!)
+        : 'Not specified';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -342,12 +334,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildInfoTile(Icons.badge, 'NID Number', _userData?['nid']),
-          _buildInfoTile(Icons.phone, 'Phone', _userData?['phone']),
-          _buildInfoTile(Icons.location_on, 'Address', _userData?['address']),
+          _buildInfoTile(Icons.badge, 'NID Number', profile.nid),
+          _buildInfoTile(Icons.phone, 'Phone', profile.phone),
+          _buildInfoTile(Icons.location_on, 'Address', profile.address),
           _buildInfoTile(Icons.cake, 'Date of Birth', formattedDob),
           _buildInfoTile(Icons.bloodtype, 'Blood Group',
-              _userData?['bloodGroup'] ?? 'Not specified'),
+              profile.bloodGroup ?? 'Not specified'),
         ],
       ),
     );
@@ -652,7 +644,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _updateProfilePhoto() async {
+  Future<void> _updateProfilePhoto(ProfileProvider provider) async {
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
@@ -674,35 +666,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
 
-      final uid = _auth.currentUser?.uid;
-      if (uid == null) throw Exception('User not logged in');
-
-      // Upload to Firebase Storage
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('profile_photos')
-          .child('$uid.jpg');
-
-      await storageRef.putFile(File(image.path));
-      final downloadUrl = await storageRef.getDownloadURL();
-
-      // Update Firestore
-      await _firestore.collection('citizens').doc(uid).update({
-        'imageUrl': downloadUrl,
-      });
-
-      // Reload user data
-      await _loadUserData();
+      // Use ProfileProvider to update photo
+      await provider.updateProfilePhoto(image.path);
 
       if (!mounted) return;
       Navigator.pop(context); // Close loading dialog
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile photo updated successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (provider.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating photo: ${provider.error}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile photo updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context); // Close loading dialog

@@ -22,6 +22,12 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 // Dashboard & Profile
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
+import 'features/profile/data/datasources/profile_remote_data_source.dart';
+import 'features/profile/data/repositories/profile_repository_impl.dart';
+import 'features/profile/domain/usecases/get_profile.dart';
+import 'features/profile/domain/usecases/update_profile.dart';
+import 'features/profile/domain/usecases/update_profile_photo.dart';
+import 'features/profile/presentation/providers/profile_provider.dart';
 
 // Complaint
 import 'features/complaint/presentation/screens/submit_complaint_screen.dart';
@@ -86,6 +92,16 @@ class MyApp extends StatelessWidget {
     final chatRepo = ChatRepositoryImpl(remote: chatRemote);
     final sendMessageUsecase = SendMessage(chatRepo);
 
+    // Profile dependencies
+    final profileRemote = ProfileRemoteDataSource(
+      firestore: firestore,
+      storage: FirebaseStorage.instance,
+    );
+    final profileRepo = ProfileRepositoryImpl(remoteDataSource: profileRemote);
+    final getProfileUsecase = GetProfile(profileRepo);
+    final updateProfileUsecase = UpdateProfile(profileRepo);
+    final updateProfilePhotoUsecase = UpdateProfilePhoto(profileRepo);
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -102,6 +118,14 @@ class MyApp extends StatelessWidget {
           create: (_) => ChatProvider(
             sendMessageUsecase: sendMessageUsecase,
             repository: chatRepo,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProfileProvider(
+            getProfileUseCase: getProfileUsecase,
+            updateProfileUseCase: updateProfileUsecase,
+            updateProfilePhotoUseCase: updateProfilePhotoUsecase,
+            firebaseAuth: fb_auth.FirebaseAuth.instance,
           ),
         ),
       ],

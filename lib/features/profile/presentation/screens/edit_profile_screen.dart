@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../domain/entities/profile_entity.dart';
+import '../providers/profile_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  final Map<String, dynamic> userData;
+  final ProfileEntity profile;
 
-  const EditProfileScreen({super.key, required this.userData});
+  const EditProfileScreen({super.key, required this.profile});
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -14,8 +15,6 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   late TextEditingController _phoneController;
   bool _isLoading = false;
@@ -23,7 +22,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _phoneController = TextEditingController(text: widget.userData['phone']);
+    _phoneController = TextEditingController(text: widget.profile.phone);
   }
 
   @override
@@ -40,24 +39,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
 
     try {
-      final uid = _auth.currentUser?.uid;
-      if (uid == null) throw Exception('User not logged in');
+      final profileProvider =
+          Provider.of<ProfileProvider>(context, listen: false);
 
-      await _firestore.collection('citizens').doc(uid).update({
-        'phone': _phoneController.text.trim(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      await profileProvider.updateProfile(
+        fullName: widget.profile.fullName,
+        phone: _phoneController.text.trim(),
+        address: widget.profile.address ?? '',
+        bloodGroup: widget.profile.bloodGroup ?? '',
+        dob: widget.profile.dob ?? DateTime.now(),
+      );
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (profileProvider.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating profile: ${profileProvider.error}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-      Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, true); // Return true to indicate success
+      }
     } catch (e) {
       if (!mounted) return;
 
@@ -152,16 +163,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    _buildInfoRow('NID Number', widget.userData['nid']),
-                    _buildInfoRow('Name', widget.userData['fullName']),
-                    _buildInfoRow('Blood Group', widget.userData['bloodGroup']),
-                    _buildInfoRow('Email', widget.userData['email']),
+                    _buildInfoRow('NID Number', widget.profile.nid),
+                    _buildInfoRow('Name', widget.profile.fullName),
+                    _buildInfoRow('Blood Group',
+                        widget.profile.bloodGroup ?? 'Not specified'),
+                    _buildInfoRow('Email', widget.profile.email),
                     _buildInfoRow(
                         'Date Of Birth',
-                        widget.userData['dob'] is Timestamp
-                            ? DateFormat('dd MMM yyyy').format(
-                                (widget.userData['dob'] as Timestamp).toDate())
-                            : widget.userData['dob']),
+                        widget.profile.dob != null
+                            ? DateFormat('dd MMM yyyy')
+                                .format(widget.profile.dob!)
+                            : 'Not specified'),
                   ],
                 ),
               ),
