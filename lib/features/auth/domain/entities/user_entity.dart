@@ -8,6 +8,7 @@ class UserEntity {
   final String? imageUrl;
   final String? phoneNumber;
   final String? email;
+  final UserRole? role;
 
   UserEntity({
     required this.id,
@@ -19,5 +20,12 @@ class UserEntity {
     this.imageUrl,
     this.phoneNumber,
     this.email,
+    this.role,
   });
+}
+
+enum UserRole {
+  admin,
+  citizen,
+  worker,
 }
