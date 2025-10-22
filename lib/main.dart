@@ -72,6 +72,15 @@ import 'features/admin/presentation/screens/admin_contractors_screen.dart';
 import 'features/admin/presentation/screens/admin_contractor_detail_screen.dart';
 import 'features/admin/presentation/screens/admin_create_contractor_screen.dart';
 import 'features/admin/presentation/screens/admin_settings_screen.dart';
+import 'features/admin/data/datasources/admin_remote_data_source.dart';
+import 'features/admin/data/repositories/admin_repository_impl.dart';
+import 'features/admin/domain/usecases/get_all_complaints.dart'
+    as admin_usecases;
+import 'features/admin/domain/usecases/get_dashboard_statistics.dart'
+    as admin_usecases;
+import 'features/admin/domain/usecases/update_complaint_status.dart'
+    as admin_usecases;
+import 'features/admin/presentation/providers/admin_provider.dart';
 
 // Contractor
 import 'features/contractor/presentation/screens/contractor_dashboard_screen.dart';
@@ -164,6 +173,15 @@ class MyApp extends StatelessWidget {
     final getUnreadNoticeCountUsecase = GetUnreadNoticeCount(dashboardRepo);
     final markNoticeAsReadUsecase = MarkNoticeAsRead(dashboardRepo);
 
+    // Admin dependencies
+    final adminRemote = AdminRemoteDataSource(firestore: firestore);
+    final adminRepo = AdminRepositoryImpl(remoteDataSource: adminRemote);
+    final getAllComplaintsUsecase = admin_usecases.GetAllComplaints(adminRepo);
+    final getAdminDashboardStatisticsUsecase =
+        admin_usecases.GetDashboardStatistics(adminRepo);
+    final updateComplaintStatusUsecase =
+        admin_usecases.UpdateComplaintStatus(adminRepo);
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -198,6 +216,13 @@ class MyApp extends StatelessWidget {
             getUnreadNoticeCountUseCase: getUnreadNoticeCountUsecase,
             markNoticeAsReadUseCase: markNoticeAsReadUsecase,
             firebaseAuth: fb_auth.FirebaseAuth.instance,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdminProvider(
+            getAllComplaintsUseCase: getAllComplaintsUsecase,
+            getDashboardStatisticsUseCase: getAdminDashboardStatisticsUsecase,
+            updateComplaintStatusUseCase: updateComplaintStatusUsecase,
           ),
         ),
       ],
