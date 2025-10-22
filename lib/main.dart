@@ -51,6 +51,7 @@ import 'features/complaint/presentation/providers/complaint_provider.dart';
 
 // Chat
 import 'features/chat/presentation/screens/chat_screen.dart';
+import 'features/chat/presentation/screens/admin_chat_list_screen.dart';
 import 'features/chat/data/datasources/chat_remote_data_source.dart';
 import 'features/chat/data/repositories/chat_repository_impl.dart';
 import 'features/chat/domain/usecases/send_message.dart';
@@ -62,11 +63,22 @@ import 'features/admin/presentation/screens/admin_dashboard_screen.dart';
 // ONE-TIME DATABASE SEEDER (uncomment to run once, then comment out again)
 import 'features/dashboard/data/datasources/seed_dashboard_data.dart';
 
+// Notification Service
+import 'services/notification_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialize Push Notifications
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
+  // Subscribe to general topics
+  await notificationService.subscribeToTopic('all_users');
+  await notificationService.subscribeToTopic('urgent_notices');
 
   // ⚠️ ONE-TIME SEEDING - UNCOMMENT BELOW, RUN ONCE, THEN COMMENT OUT AGAIN ⚠️
   // await seedDashboardData();
@@ -183,6 +195,8 @@ class MyApp extends StatelessWidget {
           GetPage(
               name: '/tracking', page: () => const ComplaintTrackingScreen()),
           GetPage(name: '/chat', page: () => const ChatScreen()),
+          GetPage(
+              name: '/admin-chats', page: () => const AdminChatListScreen()),
           GetPage(name: '/admin', page: () => const AdminDashboardScreen()),
         ],
       ),

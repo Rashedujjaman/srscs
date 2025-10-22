@@ -1,32 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import '../../domain/entities/chat_message_entity.dart';
-import '../providers/chat_provider.dart';
+import '../../data/datasources/chat_remote_data_source.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+class AdminChatDetailScreen extends StatefulWidget {
+  final String userId;
+  final String userName;
+
+  const AdminChatDetailScreen({
+    super.key,
+    required this.userId,
+    required this.userName,
+  });
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<AdminChatDetailScreen> createState() => _AdminChatDetailScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
   final _messageCtrl = TextEditingController();
   final _scrollController = ScrollController();
   final _imagePicker = ImagePicker();
+  final _dataSource = ChatRemoteDataSource();
   bool _isUploading = false;
+  bool _isTyping = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _markMessagesAsRead();
+  }
 
   @override
   void dispose() {
     _messageCtrl.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _markMessagesAsRead() async {
+    try {
+      await FirebaseDatabase.instance
+          .ref('chats/${widget.userId}')
+          .update({'unreadCount': 0});
+    } catch (e) {
+      print('Error marking messages as read: $e');
+    }
   }
 
   void _scrollToBottom() {
@@ -43,19 +67,20 @@ class _ChatScreenState extends State<ChatScreen> {
     final message = _messageCtrl.text.trim();
     if (message.isEmpty) return;
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    try {
+      await _dataSource.sendMessage(
+        userId: widget.userId,
+        userName: 'Admin',
+        message: message,
+        isAdmin: true,
+      );
 
-    final provider = Provider.of<ChatProvider>(context, listen: false);
-
-    await provider.sendMessage(
-      userId: user.uid,
-      userName: user.displayName ?? user.email ?? 'User',
-      message: message,
-    );
-
-    _messageCtrl.clear();
-    Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+      _messageCtrl.clear();
+      setState(() => _isTyping = false);
+      Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+    } catch (e) {
+      _showError('Failed to send message: $e');
+    }
   }
 
   Future<void> _pickAndSendImage() async {
@@ -106,9 +131,6 @@ class _ChatScreenState extends State<ChatScreen> {
     required MessageType type,
     required String message,
   }) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
     setState(() => _isUploading = true);
 
     try {
@@ -117,20 +139,20 @@ class _ChatScreenState extends State<ChatScreen> {
       final storageRef = FirebaseStorage.instance
           .ref()
           .child('chat_media')
-          .child(user.uid)
+          .child('admin')
           .child(fileName);
 
       final uploadTask = storageRef.putFile(file);
       final snapshot = await uploadTask;
       final downloadUrl = await snapshot.ref.getDownloadURL();
 
-      final provider = Provider.of<ChatProvider>(context, listen: false);
-      await provider.sendMessage(
-        userId: user.uid,
-        userName: user.displayName ?? user.email ?? 'User',
+      await _dataSource.sendMessage(
+        userId: widget.userId,
+        userName: 'Admin',
         message: message,
         type: type,
         mediaUrl: downloadUrl,
+        isAdmin: true,
       );
 
       Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
@@ -210,26 +232,26 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please log in to chat')),
-      );
-    }
-
-    final provider = Provider.of<ChatProvider>(context);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat with Admin'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.userName),
+            Text(
+              'User ID: ${widget.userId.substring(0, 8)}...',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
         backgroundColor: const Color(0xFF9F7AEA),
       ),
       body: Column(
         children: [
           // Messages List
           Expanded(
-            child: StreamBuilder<List<ChatMessageEntity>>(
-              stream: provider.getMessagesStream(user.uid),
+            child: StreamBuilder(
+              stream: _dataSource.getMessagesStream(widget.userId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -243,7 +265,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                 if (messages.isEmpty) {
                   return const Center(
-                    child: Text('No messages yet. Start a conversation!'),
+                    child: Text('No messages yet'),
                   );
                 }
 
@@ -263,7 +285,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     return Column(
                       children: [
                         if (showDateHeader) _buildDateHeader(message.timestamp),
-                        _buildMessageBubble(message, user.uid),
+                        _buildMessageBubble(message),
                       ],
                     );
                   },
@@ -324,6 +346,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     maxLines: null,
                     textCapitalization: TextCapitalization.sentences,
                     enabled: !_isUploading,
+                    onChanged: (value) {
+                      setState(() => _isTyping = value.isNotEmpty);
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -343,11 +368,11 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildMessageBubble(ChatMessageEntity message, String currentUserId) {
-    final isMe = message.senderId == currentUserId;
+  Widget _buildMessageBubble(ChatMessageEntity message) {
+    final isAdmin = message.isAdmin;
 
     return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
@@ -355,28 +380,28 @@ class _ChatScreenState extends State<ChatScreen> {
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
-          color: isMe ? const Color(0xFF9F7AEA) : Colors.grey[300],
+          color: isAdmin ? const Color(0xFF9F7AEA) : Colors.grey[300],
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),
-            bottomLeft: isMe ? const Radius.circular(12) : Radius.zero,
-            bottomRight: isMe ? Radius.zero : const Radius.circular(12),
+            bottomLeft: isAdmin ? const Radius.circular(12) : Radius.zero,
+            bottomRight: isAdmin ? Radius.zero : const Radius.circular(12),
           ),
         ),
         child: Column(
           crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              isAdmin ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            if (!isMe)
+            if (!isAdmin)
               Text(
-                message.isAdmin ? 'Admin' : message.senderName,
+                message.senderName,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isMe ? Colors.white70 : Colors.black54,
+                  color: isAdmin ? Colors.white70 : Colors.black54,
                 ),
               ),
-            if (!isMe) const SizedBox(height: 4),
+            if (!isAdmin) const SizedBox(height: 4),
 
             // Media Content
             if (message.type == MessageType.image && message.mediaUrl != null)
@@ -418,7 +443,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isMe ? Colors.white24 : Colors.white,
+                    color: isAdmin ? Colors.white24 : Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -426,7 +451,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     children: [
                       Icon(
                         Icons.insert_drive_file,
-                        color: isMe ? Colors.white : Colors.black54,
+                        color: isAdmin ? Colors.white : Colors.black54,
                       ),
                       const SizedBox(width: 8),
                       Flexible(
@@ -434,7 +459,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           message.message,
                           style: TextStyle(
                             fontSize: 14,
-                            color: isMe ? Colors.white : Colors.black87,
+                            color: isAdmin ? Colors.white : Colors.black87,
                           ),
                         ),
                       ),
@@ -457,7 +482,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   message.message,
                   style: TextStyle(
                     fontSize: 15,
-                    color: isMe ? Colors.white : Colors.black87,
+                    color: isAdmin ? Colors.white : Colors.black87,
                   ),
                 ),
               ),
@@ -467,7 +492,7 @@ class _ChatScreenState extends State<ChatScreen> {
               DateFormat('hh:mm a').format(message.timestamp),
               style: TextStyle(
                 fontSize: 10,
-                color: isMe ? Colors.white70 : Colors.black45,
+                color: isAdmin ? Colors.white70 : Colors.black45,
               ),
             ),
           ],
@@ -496,7 +521,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _openFile(String fileUrl) {
-    // Open file in browser or external app
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Opening file...'),

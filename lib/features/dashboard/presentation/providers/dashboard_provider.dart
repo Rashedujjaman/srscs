@@ -85,7 +85,6 @@ class DashboardProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       _error = 'Failed to load statistics: $e';
-      print('Error loading statistics: $e');
     } finally {
       _isLoadingStatistics = false;
       notifyListeners();
@@ -103,7 +102,6 @@ class DashboardProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       _error = 'Failed to load news: $e';
-      print('Error loading news: $e');
     } finally {
       _isLoadingNews = false;
       notifyListeners();
@@ -122,7 +120,6 @@ class DashboardProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       _error = 'Failed to load notices: $e';
-      print('Error loading notices: $e');
     } finally {
       _isLoadingNotices = false;
       notifyListeners();
@@ -138,7 +135,7 @@ class DashboardProvider with ChangeNotifier {
       _unreadNoticeCount = await getUnreadNoticeCountUseCase.call(userId);
       notifyListeners();
     } catch (e) {
-      print('Error loading unread notice count: $e');
+      _error = 'Failed to load unread notice count: $e';
     }
   }
 
@@ -182,7 +179,7 @@ class DashboardProvider with ChangeNotifier {
       // Reload unread count after marking as read
       await loadUnreadNoticeCount();
     } catch (e) {
-      print('Error marking notice as read: $e');
+      _error = 'Failed to mark notice as read: $e';
     }
   }
 }
