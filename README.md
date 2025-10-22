@@ -1,10 +1,31 @@
-# SRSCS - Smart Resident Services & Complaint System# Smart Road Safety Complaint System (SRSCS)
+# SRSCS - Smart Road Safety Complaint System
 
-A comprehensive Flutter application for managing citizen services, complaints, and administrative operations with real-time communication features.A comprehensive Flutter mobile application for reporting and managing road safety complaints with offline support, real-time chat, and admin dashboard.
+> **⚠️ MAJOR UPDATE: Role-Based Architecture Implementation in Progress**
 
-## 📱 Overview## 🌟 Features
+A comprehensive Flutter mobile application for reporting and managing road safety complaints with **role-based access control**, offline support, real-time chat, and multi-user dashboards.
 
-SRSCS is a mobile application that connects citizens with administrators for efficient service delivery and complaint management. Built with Flutter and Firebase, it provides a modern, scalable solution for local government and community management.### 1. **User Authentication & NID Verification**
+## 📱 Overview
+
+SRSCS is a **unified mobile application** that serves three user types - Citizens, Contractors, and Administrators - for efficient road safety complaint management. Built with Flutter and Firebase, it provides a scalable, role-based solution for local government and community management.
+
+### 🎯 System Architecture
+
+```
+┌────────────────────────────────────────┐
+│     SRSCS Mobile Application           │
+│        (Single Unified App)            │
+└─────────────┬──────────────────────────┘
+              │
+    ┌─────────┼─────────┐
+    │         │         │
+    ▼         ▼         ▼
+┌────────┐ ┌──────────┐ ┌──────┐
+│ Citizen│ │Contractor│ │ Admin│
+│ (Purple│ │  (Blue)  │ │ (Red)│
+└────────┘ └──────────┘ └──────┘
+```
+
+## 🌟 Features by Role### 1. **User Authentication & NID Verification**
 
 ## ✨ Features- Registration with National ID (NID) card verification
 

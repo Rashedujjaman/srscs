@@ -18,11 +18,19 @@ class ComplaintEntity {
   final String description;
   final List<String> mediaUrls; // photo, video, audio URLs
   final Map<String, double>? location; // {lat, lng}
+  final String? area; // Area/location name for assignment
   final ComplaintStatus status;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final String? assignedTo;
+
+  // Assignment fields for contractor management
+  final String? assignedTo; // Contractor ID
+  final String? assignedBy; // Admin ID who assigned
+  final DateTime? assignedAt; // When it was assigned
+  final DateTime? completedAt; // When contractor completed it
+
   final String? adminNotes;
+  final String? contractorNotes; // Notes from contractor
 
   ComplaintEntity({
     required this.id,
@@ -32,11 +40,16 @@ class ComplaintEntity {
     required this.description,
     this.mediaUrls = const [],
     this.location,
+    this.area,
     this.status = ComplaintStatus.pending,
     required this.createdAt,
     this.updatedAt,
     this.assignedTo,
+    this.assignedBy,
+    this.assignedAt,
+    this.completedAt,
     this.adminNotes,
+    this.contractorNotes,
   });
 
   String get statusText {

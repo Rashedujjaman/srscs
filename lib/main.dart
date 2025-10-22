@@ -9,7 +9,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'firebase_options.dart';
 
+// Core Routes
+import 'core/routes/app_routes.dart';
+import 'core/routes/route_manager.dart';
+import 'core/routes/route_guard_middleware.dart';
+
 // Auth
+import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/auth/presentation/screens/forgot_password_screen.dart';
@@ -59,9 +65,22 @@ import 'features/chat/presentation/providers/chat_provider.dart';
 
 // Admin
 import 'features/admin/presentation/screens/admin_dashboard_screen.dart';
+import 'features/admin/presentation/screens/admin_complaints_screen.dart';
+import 'features/admin/presentation/screens/admin_complaint_detail_screen.dart';
+import 'features/admin/presentation/screens/admin_assignment_screen.dart';
+import 'features/admin/presentation/screens/admin_contractors_screen.dart';
+import 'features/admin/presentation/screens/admin_contractor_detail_screen.dart';
+import 'features/admin/presentation/screens/admin_create_contractor_screen.dart';
+import 'features/admin/presentation/screens/admin_settings_screen.dart';
+
+// Contractor
+import 'features/contractor/presentation/screens/contractor_dashboard_screen.dart';
+import 'features/contractor/presentation/screens/contractor_tasks_screen.dart';
+import 'features/contractor/presentation/screens/contractor_task_detail_screen.dart';
+import 'features/contractor/presentation/screens/contractor_completed_tasks_screen.dart';
 
 // ONE-TIME DATABASE SEEDER (uncomment to run once, then comment out again)
-import 'features/dashboard/data/datasources/seed_dashboard_data.dart';
+// import 'features/dashboard/data/datasources/seed_dashboard_data.dart';
 
 // Notification Service
 import 'services/notification_service.dart';
@@ -185,26 +204,142 @@ class MyApp extends StatelessWidget {
       child: GetMaterialApp(
         title: 'SRSCS',
         debugShowCheckedModeBanner: false,
-        initialRoute: fb_auth.FirebaseAuth.instance.currentUser == null
-            ? '/login'
-            : '/dashboard',
+        initialRoute: '/',
         getPages: [
-          GetPage(name: '/login', page: () => const LoginScreen()),
+          // Splash Screen
+          GetPage(name: '/', page: () => const SplashScreen()),
+
+          // Auth Routes
+          GetPage(name: AppRoutes.login, page: () => const LoginScreen()),
           GetPage(
-              name: '/register',
-              page: () => RegisterScreen(prefilledData: const {})),
-          GetPage(name: '/forgot', page: () => const ForgotPasswordScreen()),
-          GetPage(name: '/nid', page: () => const NIDVerificationScreen()),
-          GetPage(name: '/dashboard', page: () => const DashboardScreen()),
-          GetPage(name: '/profile', page: () => const ProfileScreen()),
-          GetPage(name: '/submit', page: () => const SubmitComplaintScreen()),
+            name: AppRoutes.register,
+            page: () => RegisterScreen(prefilledData: const {}),
+          ),
           GetPage(
-              name: '/tracking', page: () => const ComplaintTrackingScreen()),
-          GetPage(name: '/chat', page: () => const ChatScreen()),
+            name: AppRoutes.forgotPassword,
+            page: () => const ForgotPasswordScreen(),
+          ),
           GetPage(
-              name: '/admin-chats', page: () => const AdminChatListScreen()),
-          GetPage(name: '/admin', page: () => const AdminDashboardScreen()),
+            name: AppRoutes.nidVerification,
+            page: () => const NIDVerificationScreen(),
+          ),
+
+          // Citizen Routes
+          GetPage(
+            name: AppRoutes.citizenDashboard,
+            page: () => const DashboardScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.submitComplaint,
+            page: () => const SubmitComplaintScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.trackComplaints,
+            page: () => const ComplaintTrackingScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.citizenChat,
+            page: () => const ChatScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.profile,
+            page: () => const ProfileScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+
+          // Contractor Routes
+          GetPage(
+            name: AppRoutes.contractorDashboard,
+            page: () => const ContractorDashboardScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.contractorTasks,
+            page: () => const ContractorTasksScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.contractorTaskDetail,
+            page: () => const ContractorTaskDetailScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.contractorCompleted,
+            page: () => const ContractorCompletedTasksScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.contractorChat,
+            page: () => const ChatScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.contractorProfile,
+            page: () => const ProfileScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+
+          // Admin Routes
+          GetPage(
+            name: AppRoutes.adminDashboard,
+            page: () => const AdminDashboardScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.adminComplaints,
+            page: () => const AdminComplaintsScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.adminComplaintDetail,
+            page: () => const AdminComplaintDetailScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.adminAssignment,
+            page: () => const AdminAssignmentScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.adminContractors,
+            page: () => const AdminContractorsScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.adminContractorDetail,
+            page: () => const AdminContractorDetailScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.adminContractorCreate,
+            page: () => const AdminCreateContractorScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.adminChatManagement,
+            page: () => const AdminChatListScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.adminSettings,
+            page: () => const AdminSettingsScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
         ],
+        onUnknownRoute: (settings) {
+          return GetPageRoute(
+            page: () => Scaffold(
+              appBar: AppBar(title: const Text('Page Not Found')),
+              body: const Center(
+                child: Text('404 - Page Not Found'),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

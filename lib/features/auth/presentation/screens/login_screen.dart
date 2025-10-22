@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../services/auth_service.dart';
+import '../../../../core/routes/app_routes.dart';
+import '../../../../core/constants/user_roles.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,6 +15,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _authService = AuthService();
   bool _isLoading = false;
   bool _obscurePassword = true; // 👁️ Track password visibility
 
@@ -27,17 +31,86 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      // Sign in with Firebase Auth
+      final userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: pass,
       );
-      _showMessage("Login Successful");
+
+      final userId = userCredential.user?.uid;
+      if (userId == null) {
+        throw Exception('User ID is null');
+      }
+
+      // Get user role from Firestore
+      final userRole = await _authService.getUserRole(userId);
+
+      if (userRole == null) {
+        // User authenticated but no role found in any collection
+        await FirebaseAuth.instance.signOut();
+        _showError("Account not found. Please contact administrator.");
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Show success message with role
+      String roleText = '';
+      switch (userRole) {
+        case UserRole.citizen:
+          roleText = 'Citizen';
+          break;
+        case UserRole.contractor:
+          roleText = 'Contractor';
+          break;
+        case UserRole.admin:
+          roleText = 'Admin';
+          break;
+      }
+
+      _showMessage("Login Successful as $roleText");
       await Future.delayed(const Duration(seconds: 1));
-      if (mounted) Get.offAllNamed('/dashboard');
+
+      // Navigate to role-specific dashboard
+      if (mounted) {
+        final dashboardRoute =
+            AppRoutes.getInitialRoute(userRole.toString().split('.').last);
+        Get.offAllNamed(dashboardRoute);
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = "Login Failed";
+
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = "No user found with this email.";
+          break;
+        case 'wrong-password':
+          errorMessage = "Incorrect password. Please try again.";
+          break;
+        case 'invalid-email':
+          errorMessage = "Invalid email format.";
+          break;
+        case 'user-disabled':
+          errorMessage = "This account has been disabled.";
+          break;
+        case 'too-many-requests':
+          errorMessage = "Too many attempts. Please try again later.";
+          break;
+        case 'invalid-credential':
+          errorMessage =
+              "Invalid credentials. Please check your email and password.";
+          break;
+        default:
+          errorMessage = "Login Failed: ${e.message}";
+      }
+
+      _showError(errorMessage);
     } catch (e) {
-      _showError("Login Failed: Please check your Gmail or password.");
+      _showError("An error occurred: $e");
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -51,6 +124,13 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), backgroundColor: Colors.green),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
   }
 
   @override
