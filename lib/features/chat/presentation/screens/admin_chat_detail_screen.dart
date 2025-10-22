@@ -49,7 +49,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
           .ref('chats/${widget.userId}')
           .update({'unreadCount': 0});
     } catch (e) {
-      print('Error marking messages as read: $e');
+      // Silently fail
     }
   }
 
@@ -253,19 +253,55 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
             child: StreamBuilder(
               stream: _dataSource.getMessagesStream(widget.userId),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                // Show loading only on initial connection
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    !snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline,
+                            size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text('Error: ${snapshot.error}'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {}); // Trigger rebuild
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 final messages = snapshot.data ?? [];
 
                 if (messages.isEmpty) {
                   return const Center(
-                    child: Text('No messages yet'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline,
+                            size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          'No messages yet',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Start the conversation!',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
                   );
                 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -21,12 +22,38 @@ class _ChatScreenState extends State<ChatScreen> {
   final _scrollController = ScrollController();
   final _imagePicker = ImagePicker();
   bool _isUploading = false;
+  String? _cachedUserName;
 
   @override
   void dispose() {
     _messageCtrl.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Fetch user's full name from Firestore (cached)
+  Future<String> _getUserName() async {
+    if (_cachedUserName != null) return _cachedUserName!;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return 'User';
+
+      final doc = await FirebaseFirestore.instance
+          .collection('citizens')
+          .doc(user.uid)
+          .get();
+
+      if (doc.exists) {
+        _cachedUserName = doc.data()?['fullName'] ?? user.email ?? 'User';
+        return _cachedUserName!;
+      }
+    } catch (e) {
+      // Silently fail, use fallback
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+    return user?.email ?? 'User';
   }
 
   void _scrollToBottom() {
@@ -47,10 +74,11 @@ class _ChatScreenState extends State<ChatScreen> {
     if (user == null) return;
 
     final provider = Provider.of<ChatProvider>(context, listen: false);
+    final userName = await _getUserName();
 
     await provider.sendMessage(
       userId: user.uid,
-      userName: user.displayName ?? user.email ?? 'User',
+      userName: userName,
       message: message,
     );
 
@@ -125,9 +153,11 @@ class _ChatScreenState extends State<ChatScreen> {
       final downloadUrl = await snapshot.ref.getDownloadURL();
 
       final provider = Provider.of<ChatProvider>(context, listen: false);
+      final userName = await _getUserName();
+
       await provider.sendMessage(
         userId: user.uid,
-        userName: user.displayName ?? user.email ?? 'User',
+        userName: userName,
         message: message,
         type: type,
         mediaUrl: downloadUrl,
@@ -231,19 +261,55 @@ class _ChatScreenState extends State<ChatScreen> {
             child: StreamBuilder<List<ChatMessageEntity>>(
               stream: provider.getMessagesStream(user.uid),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                // Show loading only on initial connection
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    !snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline,
+                            size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text('Error: ${snapshot.error}'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {}); // Trigger rebuild
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 final messages = snapshot.data ?? [];
 
                 if (messages.isEmpty) {
                   return const Center(
-                    child: Text('No messages yet. Start a conversation!'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline,
+                            size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          'No messages yet',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Start a conversation!',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
                   );
                 }
 

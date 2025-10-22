@@ -16,82 +16,63 @@ class ChatRemoteDataSource {
     String? mediaUrl,
     bool isAdmin = false,
   }) async {
-    try {
-      final chatRef = database.ref('chats/$userId/messages');
-      final newMessageRef = chatRef.push();
+    final chatRef = database.ref('chats/$userId/messages');
+    final newMessageRef = chatRef.push();
 
-      final chatMessage = ChatMessageModel(
-        id: newMessageRef.key ?? '',
-        senderId: userId,
-        senderName: userName,
-        message: message,
-        type: type,
-        mediaUrl: mediaUrl,
-        timestamp: DateTime.now(),
-        isAdmin: isAdmin,
-      );
+    final chatMessage = ChatMessageModel(
+      id: newMessageRef.key ?? '',
+      senderId: userId,
+      senderName: userName,
+      message: message,
+      type: type,
+      mediaUrl: mediaUrl,
+      timestamp: DateTime.now(),
+      isAdmin: isAdmin,
+    );
 
-      await newMessageRef.set(chatMessage.toJson());
+    await newMessageRef.set(chatMessage.toJson());
 
-      // Update last message in session
-      await database.ref('chats/$userId').update({
-        'lastMessage': message,
-        'lastMessageTime': DateTime.now().millisecondsSinceEpoch,
-        'userName': userName,
-      });
-    } catch (e) {
-      print('Error sending message for userId $userId: $e');
-      throw Exception('Failed to send message: ${e.toString()}');
-    }
+    // Update last message in session
+    await database.ref('chats/$userId').update({
+      'lastMessage': message,
+      'lastMessageTime': DateTime.now().millisecondsSinceEpoch,
+      'userName': userName,
+    });
   }
 
   Stream<List<ChatMessageModel>> getMessagesStream(String userId) {
-    try {
-      return database
-          .ref('chats/$userId/messages')
-          .orderByChild('timestamp')
-          .onValue
-          .map((event) {
+    return database
+        .ref('chats/$userId/messages')
+        .orderByChild('timestamp')
+        .onValue
+        .map((event) {
+      final messages = <ChatMessageModel>[];
+
+      if (event.snapshot.value == null) {
+        return messages;
+      }
+
+      final data = event.snapshot.value as Map<dynamic, dynamic>;
+      data.forEach((key, value) {
         try {
-          final messages = <ChatMessageModel>[];
-          if (event.snapshot.value != null) {
-            final data = event.snapshot.value as Map<dynamic, dynamic>;
-            data.forEach((key, value) {
-              try {
-                final snapshot = event.snapshot.child(key);
-                messages.add(ChatMessageModel.fromSnapshot(snapshot));
-              } catch (e) {
-                print('Error parsing message $key: $e');
-              }
-            });
-          }
-          messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-          return messages;
+          final snapshot = event.snapshot.child(key);
+          messages.add(ChatMessageModel.fromSnapshot(snapshot));
         } catch (e) {
-          print('Error processing messages stream: $e');
-          throw Exception('Failed to process messages: ${e.toString()}');
+          // Skip malformed messages
         }
-      }).handleError((error) {
-        print('Error in getMessagesStream for userId $userId: $error');
-        throw Exception('Failed to stream messages: ${error.toString()}');
       });
-    } catch (e) {
-      print('Error initializing getMessagesStream: $e');
-      throw Exception('Failed to initialize message stream: ${e.toString()}');
-    }
+
+      messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      return messages;
+    });
   }
 
   Future<List<String>> getAllChatSessions() async {
-    try {
-      final snapshot = await database.ref('chats').get();
-      if (snapshot.value != null) {
-        final data = snapshot.value as Map<dynamic, dynamic>;
-        return data.keys.map((key) => key.toString()).toList();
-      }
-      return [];
-    } catch (e) {
-      print('Error getting all chat sessions: $e');
-      throw Exception('Failed to retrieve chat sessions: ${e.toString()}');
+    final snapshot = await database.ref('chats').get();
+    if (snapshot.value != null) {
+      final data = snapshot.value as Map<dynamic, dynamic>;
+      return data.keys.map((key) => key.toString()).toList();
     }
+    return [];
   }
 }

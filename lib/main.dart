@@ -52,6 +52,9 @@ import 'features/complaint/presentation/providers/complaint_provider.dart';
 // Chat
 import 'features/chat/presentation/screens/chat_screen.dart';
 import 'features/chat/presentation/screens/admin_chat_list_screen.dart';
+import 'features/chat/presentation/screens/chat_debug_screen.dart';
+import 'features/chat/presentation/screens/database_config_test_screen.dart';
+import 'features/chat/presentation/screens/update_chat_names_screen.dart';
 import 'features/chat/data/datasources/chat_remote_data_source.dart';
 import 'features/chat/data/repositories/chat_repository_impl.dart';
 import 'features/chat/domain/usecases/send_message.dart';
@@ -71,6 +74,12 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // 🔥 Configure Firebase Realtime Database
+  // ⚠️ Use the DATABASE URL, not the console URL!
+  // Correct format: https://PROJECT-ID-default-rtdb.REGION.firebasedatabase.app/
+  FirebaseDatabase.instance.databaseURL =
+      'https://srscs-58227-default-rtdb.asia-southeast1.firebasedatabase.app/';
 
   // Initialize Push Notifications
   final notificationService = NotificationService();
@@ -195,6 +204,12 @@ class MyApp extends StatelessWidget {
           GetPage(
               name: '/tracking', page: () => const ComplaintTrackingScreen()),
           GetPage(name: '/chat', page: () => const ChatScreen()),
+          GetPage(name: '/chat-debug', page: () => const ChatDebugScreen()),
+          GetPage(
+              name: '/db-test', page: () => const DatabaseConfigTestScreen()),
+          GetPage(
+              name: '/update-chat-names',
+              page: () => const UpdateChatNamesScreen()),
           GetPage(
               name: '/admin-chats', page: () => const AdminChatListScreen()),
           GetPage(name: '/admin', page: () => const AdminDashboardScreen()),

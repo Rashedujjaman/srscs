@@ -1,144 +1,272 @@
-# Smart Road Safety Complaint System (SRSCS)
+# SRSCS - Smart Resident Services & Complaint System# Smart Road Safety Complaint System (SRSCS)
 
-A comprehensive Flutter mobile application for reporting and managing road safety complaints with offline support, real-time chat, and admin dashboard.
+A comprehensive Flutter application for managing citizen services, complaints, and administrative operations with real-time communication features.A comprehensive Flutter mobile application for reporting and managing road safety complaints with offline support, real-time chat, and admin dashboard.
 
-## 🌟 Features
+## 📱 Overview## 🌟 Features
 
-### 1. **User Authentication & NID Verification**
+SRSCS is a mobile application that connects citizens with administrators for efficient service delivery and complaint management. Built with Flutter and Firebase, it provides a modern, scalable solution for local government and community management.### 1. **User Authentication & NID Verification**
 
-- Registration with National ID (NID) card verification
+## ✨ Features- Registration with National ID (NID) card verification
+
 - OCR-based NID validation
-- Phone/Email login
-- Password recovery
-- Session management
 
-### 2. **Complaint Submission**
+### User Features- Phone/Email login
 
-- Submit complaints with 7 categories (Accident, Road Damage, Signal Issues, etc.)
-- Multi-media upload (photos, videos, audio recordings)
+- **🔐 Authentication** - Secure login with NID verification- Password recovery
+
+- **👤 Profile Management** - Update personal information and profile photo- Session management
+
+- **📋 Dashboard** - View statistics, latest news, and urgent notices
+
+- **📝 Complaint Management** - Submit and track complaints with offline support### 2. **Complaint Submission**
+
+- **💬 Real-time Chat** - Communicate with administrators with media support
+
+- **🔔 Push Notifications** - Receive instant updates on complaint status and messages- Submit complaints with 7 categories (Accident, Road Damage, Signal Issues, etc.)
+
+- **📊 Complaint Tracking** - View complaint history with status updates- Multi-media upload (photos, videos, audio recordings)
+
 - GPS location tagging
-- Offline form storage with auto-sync
-- Draft saving
 
-### 3. **Real-time Live Chat**
+### Admin Features- Offline form storage with auto-sync
 
-- Direct messaging with admin support
+- **📊 Admin Dashboard** - Overview of system metrics and pending items- Draft saving
+
+- **💼 Complaint Management** - Review, update, and respond to complaints
+
+- **💬 Chat Management** - Respond to user messages with unread indicators### 3. **Real-time Live Chat**
+
+- **📢 Notice Management** - Create and manage system-wide notices
+
+- **👥 User Management** - View and manage citizen accounts- Direct messaging with admin support
+
 - Message status indicators (sent, delivered, read)
-- Media sharing in chat
+
+## 🏗️ Architecture- Media sharing in chat
+
 - Timestamp tracking
-- Firebase Realtime Database integration
 
-### 4. **Complaint Tracking**
+````- Firebase Realtime Database integration
 
-- Real-time status updates (Pending, In Progress, Resolved, Rejected, Closed)
-- Filter complaints by status/date
-- View complaint history
-- Push notifications for status changes
-- Timeline view of complaint progress
+lib/
 
-### 5. **Offline Support & Auto-Sync**
+├── features/              # Feature modules (Clean Architecture)### 4. **Complaint Tracking**
 
-- SQLite local database for offline storage
+│   ├── auth/             # Authentication & authorization
+
+│   ├── profile/          # User profile management  - Real-time status updates (Pending, In Progress, Resolved, Rejected, Closed)
+
+│   ├── dashboard/        # Dashboard & news- Filter complaints by status/date
+
+│   ├── complaint/        # Complaint submission & tracking- View complaint history
+
+│   ├── chat/            # Real-time chat functionality- Push notifications for status changes
+
+│   └── admin/           # Admin features- Timeline view of complaint progress
+
+├── services/            # Shared services
+
+│   └── notification_service.dart  # Push notifications### 5. **Offline Support & Auto-Sync**
+
+└── docs/               # Project-wide documentation
+
+```- SQLite local database for offline storage
+
 - Automatic complaint sync when online
-- Queue management for pending uploads
-- Connectivity monitoring
-- Background sync
+
+Each feature follows **Clean Architecture** principles:- Queue management for pending uploads
+
+- **Data Layer**: Models, data sources (local/remote), repositories- Connectivity monitoring
+
+- **Domain Layer**: Entities, use cases, repository interfaces- Background sync
+
+- **Presentation Layer**: Screens, widgets, providers (state management)
 
 ### 6. **Admin Dashboard**
 
+## 🚀 Getting Started
+
 - View all complaints with statistics
-- Filter by status, category, date range
-- Assign complaints to departments
-- Update complaint status
-- Generate reports (CSV/PDF)
-- Analytics charts
 
-## 🏗️ Architecture
+### Prerequisites- Filter by status, category, date range
 
-This project follows **Clean Architecture** principles with three distinct layers:
+- Flutter SDK (3.24.5 or higher)- Assign complaints to departments
 
-```
-lib/
-├── features/
+- Dart SDK (3.5.4 or higher)- Update complaint status
+
+- Firebase account- Generate reports (CSV/PDF)
+
+- Android Studio / VS Code- Analytics charts
+
+
+
+### Installation## 🏗️ Architecture
+
+
+
+1. **Clone the repository**This project follows **Clean Architecture** principles with three distinct layers:
+
+```bash
+
+git clone https://github.com/Rashedujjaman/srscs.git```
+
+cd srscslib/
+
+```├── features/
+
 │   ├── auth/
-│   │   ├── domain/           # Business logic layer
-│   │   │   ├── entities/     # Core business models
-│   │   │   ├── repositories/ # Repository interfaces
-│   │   │   └── usecases/     # Business use cases
+
+2. **Install dependencies**│   │   ├── domain/           # Business logic layer
+
+```bash│   │   │   ├── entities/     # Core business models
+
+flutter pub get│   │   │   ├── repositories/ # Repository interfaces
+
+```│   │   │   └── usecases/     # Business use cases
+
 │   │   ├── data/             # Data layer
-│   │   │   ├── models/       # Data models (with JSON)
-│   │   │   ├── datasources/  # Remote/Local data sources
-│   │   │   └── repositories/ # Repository implementations
-│   │   └── presentation/     # UI layer
+
+3. **Configure Firebase**│   │   │   ├── models/       # Data models (with JSON)
+
+```bash│   │   │   ├── datasources/  # Remote/Local data sources
+
+flutterfire configure│   │   │   └── repositories/ # Repository implementations
+
+```│   │   └── presentation/     # UI layer
+
 │   │       ├── providers/    # State management
-│   │       ├── screens/      # UI screens
+
+4. **Set up Firebase Realtime Database**│   │       ├── screens/      # UI screens
+
 │   │       └── widgets/      # Reusable widgets
-│   ├── complaint/
-│   ├── chat/
-│   └── admin/
-└── main.dart                 # App entry point with DI
-```
 
-### Layer Responsibilities:
+Edit `lib/main.dart`:│   ├── complaint/
 
-- **Domain**: Pure Dart business logic, framework-independent
-- **Data**: API calls, database operations, data transformation
+```dart│   ├── chat/
+
+FirebaseDatabase.instance.databaseURL = │   └── admin/
+
+    'https://YOUR-PROJECT-default-rtdb.REGION.firebasedatabase.app/';└── main.dart                 # App entry point with DI
+
+````
+
+5. **Run the app**### Layer Responsibilities:
+
+````bash
+
+flutter run- **Domain**: Pure Dart business logic, framework-independent
+
+```- **Data**: API calls, database operations, data transformation
+
 - **Presentation**: UI components, state management, user interactions
+
+## 📚 Module Documentation
 
 ## 🚀 Getting Started
 
+Each feature module has its own README:
+
 ### Prerequisites
 
-- Flutter SDK (>=3.2.3)
-- Dart SDK
+- **[Chat Module](lib/features/chat/README.md)** - Real-time messaging with media support
+
+- **[Dashboard Module](lib/features/dashboard/README.md)** - Statistics and news display- Flutter SDK (>=3.2.3)
+
+- **[Profile Module](lib/features/profile/README.md)** - User profile management- Dart SDK
+
 - Android Studio / VS Code
-- Firebase account
+
+## 🛠️ Tech Stack- Firebase account
+
 - Google Maps API key (for location features)
 
-### Installation
+- **Frontend**: Flutter, Dart, Provider (state management), GetX (navigation)
+
+- **Backend**: Firebase (Auth, Firestore, Realtime Database, Storage, Cloud Functions, FCM)### Installation
+
+- **Tools**: FlutterFire, Image Picker, File Picker, Connectivity Plus
 
 1. **Clone the repository**
 
-   ```bash
-   git clone https://github.com/yourusername/srscs.git
-   cd srscs
-   ```
-
-2. **Install dependencies**
+## 📦 Key Dependencies
 
    ```bash
-   flutter pub get
-   ```
+
+```yaml   git clone https://github.com/yourusername/srscs.git
+
+firebase_core: ^2.32.0   cd srscs
+
+firebase_auth: ^4.20.0   ```
+
+cloud_firestore: ^4.17.5
+
+firebase_database: ^10.5.72. **Install dependencies**
+
+firebase_storage: ^11.7.7
+
+firebase_messaging: ^14.9.4   ```bash
+
+provider: ^6.1.2   flutter pub get
+
+get: ^4.6.6   ```
+
+````
 
 3. **Firebase Setup**
 
-   a. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+## 🧪 Testing
 
-   b. Add Android/iOS apps and download config files:
+a. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
 
-   - Android: `google-services.json` → `android/app/`
+````bash
+
+flutter test              # Run unit tests   b. Add Android/iOS apps and download config files:
+
+flutter test --coverage   # Generate coverage
+
+```   - Android: `google-services.json` → `android/app/`
+
    - iOS: `GoogleService-Info.plist` → `ios/Runner/`
+
+## 📱 Main Screens
 
    c. Enable Firebase services:
 
-   - Authentication (Email/Password)
+**User**: Login, Dashboard, Profile, Submit Complaint, Tracking, Chat
+
+**Admin**: Dashboard, Complaint Management, Chat Management   - Authentication (Email/Password)
+
    - Cloud Firestore
-   - Firebase Realtime Database
+
+## 📄 License   - Firebase Realtime Database
+
    - Firebase Storage
+
+Proprietary software. All rights reserved.
 
 4. **Configure Firestore Collections**
 
-   ```
-   /users/{userId}
+## 👥 Author
+
+````
+
+**Rashed Ujjaman** - [GitHub](https://github.com/Rashedujjaman) /users/{userId}
+
      - name, email, nidNumber, phone, role
 
-   /complaints/{complaintId}
-     - userId, category, description, location, status, mediaUrls
-     - createdAt, updatedAt, assignedTo, priority
+## 📞 Support
 
-   /chats/{chatId}/messages/{messageId}
+/complaints/{complaintId}
+
+- **Issues**: [GitHub Issues](https://github.com/Rashedujjaman/srscs/issues) - userId, category, description, location, status, mediaUrls
+
+- **Docs**: Check module-specific READMEs - createdAt, updatedAt, assignedTo, priority
+
+--- /chats/{chatId}/messages/{messageId}
+
      - senderId, text, mediaUrl, timestamp, read
-   ```
+
+Made with ❤️ using Flutter ```
 
 5. **Android Permissions** (android/app/src/main/AndroidManifest.xml)
 
