@@ -59,14 +59,19 @@ class ContractorService {
 
   // Get contractors by area
   Stream<List<ContractorModel>> getContractorsByArea(String area) {
-    return _firestore
-        .collection('contractors')
-        .where('assignedArea', isEqualTo: area)
-        .where('isActive', isEqualTo: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ContractorModel.fromFirestore(doc))
-            .toList());
+    try {
+      final contractors = _firestore
+          .collection('contractors')
+          .where('assignedArea', isEqualTo: area)
+          .where('isActive', isEqualTo: true)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => ContractorModel.fromFirestore(doc))
+              .toList());
+      return contractors;
+    } catch (e) {
+      throw Exception('Failed to get contractors by area: $e');
+    }
   }
 
   // Toggle contractor active status
