@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
 import '../../../../core/constants/user_roles.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/routes/route_manager.dart';
@@ -359,7 +359,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 1.5,
+      childAspectRatio: 1.25,
       children: [
         _buildActionCard(
           'View All Complaints',
@@ -410,7 +410,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
             borderRadius: BorderRadius.circular(12),
           ),
-          constraints: const BoxConstraints(minHeight: 300),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -433,7 +432,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildRecentComplaints(AdminProvider provider) {
-    return StreamBuilder<List<Map<String, dynamic>>>(
+    return StreamBuilder<List<ComplaintEntity>>(
       stream: provider.streamAllComplaints(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -477,10 +476,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildComplaintCard(Map<String, dynamic> complaint) {
-    final status = complaint['status'] ?? 'pending';
-    final color = _getStatusColor(status);
-    final createdAt = (complaint['createdAt'] as Timestamp?)?.toDate();
+  Widget _buildComplaintCard(ComplaintEntity complaint) {
+    final status = complaint.status;
+    final color = _getStatusColor(status.toString().split('.').last);
+    final createdAt = complaint.createdAt;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -488,13 +487,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         leading: CircleAvatar(
           backgroundColor: color.withOpacity(0.2),
           child: Icon(
-            _getStatusIcon(status),
+            _getStatusIcon(status.toString().split('.').last),
             color: color,
             size: 20,
           ),
         ),
         title: Text(
-          complaint['type'] ?? 'Unknown',
+          complaint.type.toString().split('.').last,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
@@ -502,7 +501,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             const SizedBox(height: 4),
             Text(
-              complaint['description'] ?? '',
+              complaint.description,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -512,21 +511,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const Icon(Icons.person, size: 12, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
-                  complaint['userName'] ?? 'Unknown',
+                  complaint.userName,
                   style: const TextStyle(fontSize: 12),
                 ),
-                const SizedBox(width: 12),
-                if (createdAt != null) ...[
-                  const Icon(Icons.calendar_today,
-                      size: 12, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Text(
-                    DateFormat('MMM dd, yyyy').format(createdAt),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
               ],
             ),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                const Icon(Icons.calendar_today, size: 12, color: Colors.grey),
+                const SizedBox(width: 4),
+                Text(
+                  DateFormat('MMM dd, yyyy').format(createdAt),
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            )
           ],
         ),
         trailing: Container(
@@ -536,7 +536,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            _getStatusText(status),
+            _getStatusText(status.toString().split('.').last),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 10,

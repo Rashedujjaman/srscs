@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../domain/usecases/get_all_complaints.dart';
 import '../../domain/usecases/get_dashboard_statistics.dart';
 import '../../domain/usecases/update_complaint_status.dart';
+import '../../../complaint/domain/entities/complaint_entity.dart';
 
 /// Admin Provider
 ///
@@ -61,7 +62,7 @@ class AdminProvider with ChangeNotifier {
   }
 
   /// Stream all complaints
-  Stream<List<Map<String, dynamic>>> streamAllComplaints() {
+  Stream<List<ComplaintEntity>> streamAllComplaints() {
     return getAllComplaintsUseCase();
   }
 

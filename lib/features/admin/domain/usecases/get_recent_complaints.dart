@@ -1,15 +1,14 @@
 import '../repositories/admin_repository.dart';
 import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
 
-/// Get All Complaints Use Case
+/// Get Recent Complaints Use Case
 ///
-/// Retrieves all complaints across the system for admin view
-class GetAllComplaints {
+/// Retrieves recent complaints across the system for admin view
+class GetRecentComplaints {
   final AdminRepository repository;
-
-  GetAllComplaints(this.repository);
+  GetRecentComplaints(this.repository);
 
   Stream<List<ComplaintEntity>> call() {
-    return repository.getAllComplaints();
+    return repository.getRecentComplaints();
   }
 }

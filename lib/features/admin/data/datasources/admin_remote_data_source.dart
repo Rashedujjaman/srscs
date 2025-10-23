@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../complaint/domain/entities/complaint_entity.dart';
+import '../../../complaint/data/models/complaint_model.dart';
 
 /// Admin Remote Data Source
 ///
@@ -9,16 +11,28 @@ class AdminRemoteDataSource {
   AdminRemoteDataSource({required this.firestore});
 
   /// Stream all complaints
-  Stream<List<Map<String, dynamic>>> getAllComplaints() {
+  Stream<List<ComplaintEntity>> getAllComplaints() {
     return firestore
         .collection('complaints')
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return data;
+        return ComplaintModel.fromFirestore(doc);
+      }).toList();
+    });
+  }
+
+  /// Stream recent complaints (last 3)
+  Stream<List<ComplaintEntity>> getRecentComplaints() {
+    return firestore
+        .collection('complaints')
+        .orderBy('createdAt', descending: true)
+        .limit(3)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return ComplaintModel.fromFirestore(doc);
       }).toList();
     });
   }

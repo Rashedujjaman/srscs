@@ -1,5 +1,6 @@
 import '../../domain/repositories/admin_repository.dart';
 import '../datasources/admin_remote_data_source.dart';
+import '../../../complaint/domain/entities/complaint_entity.dart';
 
 /// Admin Repository Implementation
 ///
@@ -10,8 +11,13 @@ class AdminRepositoryImpl implements AdminRepository {
   AdminRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Stream<List<Map<String, dynamic>>> getAllComplaints() {
+  Stream<List<ComplaintEntity>> getAllComplaints() {
     return remoteDataSource.getAllComplaints();
+  }
+
+  @override
+  Stream<List<ComplaintEntity>> getRecentComplaints() {
+    return remoteDataSource.getRecentComplaints();
   }
 
   @override
