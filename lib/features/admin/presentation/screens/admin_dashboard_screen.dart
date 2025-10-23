@@ -610,7 +610,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       currentIndex: 0,
       items: navItems
           .map((item) => BottomNavigationBarItem(
-                icon: _getIcon(item.icon),
+                icon: item.icon,
                 label: item.label,
               ))
           .toList(),
@@ -622,22 +622,5 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       },
       selectedItemColor: UserRoleExtension(UserRole.admin).color,
     );
-  }
-
-  Icon _getIcon(String iconName) {
-    switch (iconName) {
-      case 'dashboard':
-        return const Icon(Icons.dashboard);
-      case 'list':
-        return const Icon(Icons.list_alt);
-      case 'assignment_ind':
-        return const Icon(Icons.assignment_ind);
-      case 'engineering':
-        return const Icon(Icons.engineering);
-      case 'chat':
-        return const Icon(Icons.chat);
-      default:
-        return const Icon(Icons.help);
-    }
   }
 }

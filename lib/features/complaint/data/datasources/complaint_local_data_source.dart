@@ -24,7 +24,7 @@ class ComplaintLocalDataSource {
 
       return await openDatabase(
         path,
-        version: 1,
+        version: 3, // Incremented version for landmark column
         onCreate: (db, version) async {
           await db.execute('''
             CREATE TABLE $tableName (
@@ -36,14 +36,38 @@ class ComplaintLocalDataSource {
               mediaUrls TEXT,
               locationLat REAL,
               locationLng REAL,
+              area TEXT,
+              landmark TEXT,
               status TEXT NOT NULL,
               createdAt TEXT NOT NULL,
               updatedAt TEXT,
               assignedTo TEXT,
+              assignedBy TEXT,
+              assignedAt TEXT,
+              completedAt TEXT,
               adminNotes TEXT,
+              contractorNotes TEXT,
               synced INTEGER NOT NULL DEFAULT 0
             )
           ''');
+        },
+        onUpgrade: (db, oldVersion, newVersion) async {
+          // Migration from version 1 to version 2
+          if (oldVersion < 2) {
+            await db.execute('ALTER TABLE $tableName ADD COLUMN area TEXT');
+            await db
+                .execute('ALTER TABLE $tableName ADD COLUMN assignedBy TEXT');
+            await db
+                .execute('ALTER TABLE $tableName ADD COLUMN assignedAt TEXT');
+            await db
+                .execute('ALTER TABLE $tableName ADD COLUMN completedAt TEXT');
+            await db.execute(
+                'ALTER TABLE $tableName ADD COLUMN contractorNotes TEXT');
+          }
+          // Migration from version 2 to version 3
+          if (oldVersion < 3) {
+            await db.execute('ALTER TABLE $tableName ADD COLUMN landmark TEXT');
+          }
         },
       );
     } catch (e) {
@@ -138,6 +162,27 @@ class ComplaintLocalDataSource {
       print('Error deleting complaint (complaintId: $complaintId): $e');
       throw Exception(
           'Failed to delete complaint from local storage: ${e.toString()}');
+    }
+  }
+
+  /// Reset database - useful for development/testing
+  /// WARNING: This will delete all local data
+  Future<void> resetDatabase() async {
+    try {
+      final dbPath = await getDatabasesPath();
+      final path = join(dbPath, 'complaints.db');
+
+      // Close existing connection
+      await _database?.close();
+      _database = null;
+
+      // Delete the database file
+      await deleteDatabase(path);
+
+      print('Database reset successfully');
+    } catch (e) {
+      print('Error resetting database: $e');
+      throw Exception('Failed to reset database: ${e.toString()}');
     }
   }
 }

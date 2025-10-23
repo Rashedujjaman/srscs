@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:srscs/core/routes/app_routes.dart';
+import 'package:srscs/core/routes/route_manager.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../widgets/statistics_card.dart';
@@ -233,11 +235,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Get.toNamed('/submit'),
-        icon: const Icon(Icons.edit),
-        label: const Text("Submit Complaint"),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.toNamed('/submit-complaint'),
+        tooltip: 'Submit Complaint',
         backgroundColor: const Color(0xFF9F7AEA),
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
@@ -329,44 +331,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Build Bottom Navigation Bar
   Widget _buildBottomNavigationBar() {
+    final navItems = AppRoutes.getNavigationItems('citizen');
+
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: 0,
       selectedItemColor: const Color(0xFF9F7AEA),
       onTap: (index) {
-        switch (index) {
-          case 0:
-            // Already on dashboard
-            break;
-          case 1:
-            Get.toNamed('/tracking');
-            break;
-          case 2:
-            Get.toNamed('/chat');
-            break;
-          case 3:
-            Get.toNamed('/profile');
-            break;
-        }
+        RouteManager().navigateWithRoleCheck(
+          context,
+          navItems[index].route,
+        );
       },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
-          label: 'Dashboard',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.track_changes),
-          label: 'Track',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat),
-          label: 'Chat',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
+      items: navItems
+          .map((item) => BottomNavigationBarItem(
+                icon: item.icon,
+                label: item.label,
+              ))
+          .toList(),
     );
   }
 

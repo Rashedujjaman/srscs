@@ -52,7 +52,7 @@ class ContractorDashboardScreen extends StatelessWidget {
       currentIndex: 0,
       items: navItems
           .map((item) => BottomNavigationBarItem(
-                icon: _getIcon(item.icon),
+                icon: item.icon,
                 label: item.label,
               ))
           .toList(),
@@ -66,20 +66,20 @@ class ContractorDashboardScreen extends StatelessWidget {
     );
   }
 
-  Icon _getIcon(String iconName) {
-    switch (iconName) {
-      case 'dashboard':
-        return const Icon(Icons.dashboard);
-      case 'assignment':
-        return const Icon(Icons.assignment);
-      case 'check':
-        return const Icon(Icons.check_circle);
-      case 'chat':
-        return const Icon(Icons.chat);
-      case 'person':
-        return const Icon(Icons.person);
-      default:
-        return const Icon(Icons.help);
-    }
-  }
+  // Icon _getIcon(String iconName) {
+  //   switch (iconName) {
+  //     case 'dashboard':
+  //       return const Icon(Icons.dashboard);
+  //     case 'assignment':
+  //       return const Icon(Icons.assignment);
+  //     case 'check':
+  //       return const Icon(Icons.check_circle);
+  //     case 'chat':
+  //       return const Icon(Icons.chat);
+  //     case 'person':
+  //       return const Icon(Icons.person);
+  //     default:
+  //       return const Icon(Icons.help);
+  //   }
+  // }
 }

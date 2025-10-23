@@ -29,6 +29,8 @@ class ComplaintProvider extends ChangeNotifier {
     required String description,
     required List<String> mediaFiles,
     Map<String, double>? location,
+    String? area,
+    String? landmark,
   }) async {
     state = ComplaintState.loading;
     errorMessage = null;
@@ -42,6 +44,8 @@ class ComplaintProvider extends ChangeNotifier {
         description: description,
         mediaFiles: mediaFiles,
         location: location,
+        area: area,
+        landmark: landmark,
       );
       state = ComplaintState.success;
       notifyListeners();

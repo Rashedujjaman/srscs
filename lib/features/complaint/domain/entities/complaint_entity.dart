@@ -16,9 +16,10 @@ class ComplaintEntity {
   final String userName;
   final ComplaintType type;
   final String description;
-  final List<String> mediaUrls; // photo, video, audio URLs
+  final List<String> mediaUrls;
   final Map<String, double>? location; // {lat, lng}
   final String? area; // Area/location name for assignment
+  final String? landmark; // Nearby landmark for easier identification
   final ComplaintStatus status;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -41,6 +42,7 @@ class ComplaintEntity {
     this.mediaUrls = const [],
     this.location,
     this.area,
+    this.landmark,
     this.status = ComplaintStatus.pending,
     required this.createdAt,
     this.updatedAt,

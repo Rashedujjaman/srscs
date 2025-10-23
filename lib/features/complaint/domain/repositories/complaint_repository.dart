@@ -9,6 +9,8 @@ abstract class ComplaintRepository {
     required String description,
     required List<String> mediaFiles,
     Map<String, double>? location,
+    String? area,
+    String? landmark,
   });
 
   /// Get complaints for a specific user

@@ -13,6 +13,8 @@ class SubmitComplaint {
     required String description,
     required List<String> mediaFiles,
     Map<String, double>? location,
+    String? area,
+    String? landmark,
   }) async {
     return await repository.submitComplaint(
       userId: userId,
@@ -21,6 +23,8 @@ class SubmitComplaint {
       description: description,
       mediaFiles: mediaFiles,
       location: location,
+      area: area,
+      landmark: landmark,
     );
   }
 }

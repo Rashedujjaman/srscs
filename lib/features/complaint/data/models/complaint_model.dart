@@ -11,6 +11,7 @@ class ComplaintModel extends ComplaintEntity {
     List<String> mediaUrls = const [],
     Map<String, double>? location,
     String? area,
+    String? landmark,
     ComplaintStatus status = ComplaintStatus.pending,
     required DateTime createdAt,
     DateTime? updatedAt,
@@ -29,6 +30,7 @@ class ComplaintModel extends ComplaintEntity {
           mediaUrls: mediaUrls,
           location: location,
           area: area,
+          landmark: landmark,
           status: status,
           createdAt: createdAt,
           updatedAt: updatedAt,
@@ -56,6 +58,7 @@ class ComplaintModel extends ComplaintEntity {
           ? Map<String, double>.from(data['location'])
           : null,
       area: data['area'],
+      landmark: data['landmark'],
       status: ComplaintStatus.values.firstWhere(
         (e) => e.toString() == 'ComplaintStatus.${data['status']}',
         orElse: () => ComplaintStatus.pending,
@@ -86,6 +89,7 @@ class ComplaintModel extends ComplaintEntity {
       'mediaUrls': mediaUrls,
       'location': location,
       'area': area,
+      'landmark': landmark,
       'status': status.toString().split('.').last,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
@@ -111,6 +115,7 @@ class ComplaintModel extends ComplaintEntity {
       'locationLat': location?['lat'],
       'locationLng': location?['lng'],
       'area': area,
+      'landmark': landmark,
       'status': status.toString().split('.').last,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
@@ -141,6 +146,7 @@ class ComplaintModel extends ComplaintEntity {
           ? {'lat': map['locationLat'], 'lng': map['locationLng']}
           : null,
       area: map['area'],
+      landmark: map['landmark'],
       status: ComplaintStatus.values.firstWhere(
         (e) => e.toString() == 'ComplaintStatus.${map['status']}',
         orElse: () => ComplaintStatus.pending,

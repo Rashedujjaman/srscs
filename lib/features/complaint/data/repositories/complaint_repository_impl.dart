@@ -30,6 +30,8 @@ class ComplaintRepositoryImpl implements ComplaintRepository {
     required String description,
     required List<String> mediaFiles,
     Map<String, double>? location,
+    String? area,
+    String? landmark,
   }) async {
     final complaintId = const Uuid().v4();
     final now = DateTime.now();
@@ -42,6 +44,8 @@ class ComplaintRepositoryImpl implements ComplaintRepository {
       description: description,
       mediaUrls: [], // Will be filled after upload
       location: location,
+      area: area,
+      landmark: landmark,
       status: ComplaintStatus.pending,
       createdAt: now,
     );
@@ -65,6 +69,8 @@ class ComplaintRepositoryImpl implements ComplaintRepository {
           description: description,
           mediaUrls: mediaUrls,
           location: location,
+          area: area,
+          landmark: landmark,
           status: ComplaintStatus.pending,
           createdAt: now,
         );
@@ -81,6 +87,8 @@ class ComplaintRepositoryImpl implements ComplaintRepository {
           description: description,
           mediaUrls: mediaUrls,
           location: location,
+          area: area,
+          landmark: landmark,
           status: ComplaintStatus.pending,
           createdAt: now,
         );

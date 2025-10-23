@@ -1,5 +1,8 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+
 /// App Routes - Centralized route management for role-based navigation
-/// 
+///
 /// This file defines all routes in the application organized by user role
 
 class AppRoutes {
@@ -52,9 +55,7 @@ class AppRoutes {
 
   /// Check if route requires authentication
   static bool requiresAuth(String route) {
-    return route != login && 
-           route != register && 
-           route != forgotPassword;
+    return route != login && route != register && route != forgotPassword;
   }
 
   /// Check if route is accessible by role
@@ -83,29 +84,61 @@ class AppRoutes {
     switch (role.toLowerCase()) {
       case 'citizen':
         return [
-          NavItem(label: 'Dashboard', route: citizenDashboard, icon: 'home'),
-          NavItem(label: 'Submit', route: submitComplaint, icon: 'add'),
-          NavItem(label: 'Track', route: trackComplaints, icon: 'track'),
-          NavItem(label: 'Chat', route: citizenChat, icon: 'chat'),
-          NavItem(label: 'Profile', route: profile, icon: 'person'),
+          NavItem(
+              label: 'Dashboard',
+              route: citizenDashboard,
+              icon: Icon(Icons.dashboard)),
+          NavItem(
+              label: 'Track',
+              route: trackComplaints,
+              icon: Icon(Icons.track_changes)),
+          NavItem(label: 'Chat', route: citizenChat, icon: Icon(Icons.chat)),
+          NavItem(label: 'Profile', route: profile, icon: Icon(Icons.person)),
         ];
 
       case 'contractor':
         return [
-          NavItem(label: 'Dashboard', route: contractorDashboard, icon: 'dashboard'),
-          NavItem(label: 'Tasks', route: contractorTasks, icon: 'assignment'),
-          NavItem(label: 'Completed', route: contractorCompleted, icon: 'check'),
-          NavItem(label: 'Chat', route: contractorChat, icon: 'chat'),
-          NavItem(label: 'Profile', route: contractorProfile, icon: 'person'),
+          NavItem(
+              label: 'Dashboard',
+              route: contractorDashboard,
+              icon: Icon(Icons.dashboard)),
+          NavItem(
+              label: 'Tasks',
+              route: contractorTasks,
+              icon: Icon(Icons.assignment)),
+          NavItem(
+              label: 'Completed',
+              route: contractorCompleted,
+              icon: Icon(Icons.check)),
+          NavItem(label: 'Chat', route: contractorChat, icon: Icon(Icons.chat)),
+          NavItem(
+              label: 'Profile',
+              route: contractorProfile,
+              icon: Icon(Icons.person)),
         ];
 
       case 'admin':
         return [
-          NavItem(label: 'Dashboard', route: adminDashboard, icon: 'dashboard'),
-          NavItem(label: 'Complaints', route: adminComplaints, icon: 'list'),
-          NavItem(label: 'Assign', route: adminAssignment, icon: 'assignment_ind'),
-          NavItem(label: 'Contractors', route: adminContractors, icon: 'engineering'),
-          NavItem(label: 'Chat', route: adminChatManagement, icon: 'chat'),
+          NavItem(
+              label: 'Dashboard',
+              route: adminDashboard,
+              icon: Icon(Icons.dashboard)),
+          NavItem(
+              label: 'Complaints',
+              route: adminComplaints,
+              icon: Icon(Icons.list)),
+          NavItem(
+              label: 'Assign',
+              route: adminAssignment,
+              icon: Icon(Icons.assignment_ind)),
+          NavItem(
+              label: 'Contractors',
+              route: adminContractors,
+              icon: Icon(Icons.engineering)),
+          NavItem(
+              label: 'Chat',
+              route: adminChatManagement,
+              icon: Icon(Icons.chat)),
         ];
 
       default:
@@ -117,39 +150,65 @@ class AppRoutes {
   static String getRouteTitle(String route) {
     switch (route) {
       // Auth
-      case login: return 'Login';
-      case register: return 'Register';
-      case forgotPassword: return 'Forgot Password';
-      case nidVerification: return 'NID Verification';
+      case login:
+        return 'Login';
+      case register:
+        return 'Register';
+      case forgotPassword:
+        return 'Forgot Password';
+      case nidVerification:
+        return 'NID Verification';
 
       // Citizen
-      case citizenDashboard: return 'Dashboard';
-      case submitComplaint: return 'Submit Complaint';
-      case trackComplaints: return 'Track Complaints';
-      case citizenChat: return 'Chat with Admin';
-      case profile: return 'Profile';
+      case citizenDashboard:
+        return 'Dashboard';
+      case submitComplaint:
+        return 'Submit Complaint';
+      case trackComplaints:
+        return 'Track Complaints';
+      case citizenChat:
+        return 'Chat with Admin';
+      case profile:
+        return 'Profile';
 
       // Contractor
-      case contractorDashboard: return 'Contractor Dashboard';
-      case contractorTasks: return 'My Tasks';
-      case contractorTaskDetail: return 'Task Details';
-      case contractorCompleted: return 'Completed Tasks';
-      case contractorChat: return 'Chat with Admin';
-      case contractorProfile: return 'Profile';
+      case contractorDashboard:
+        return 'Contractor Dashboard';
+      case contractorTasks:
+        return 'My Tasks';
+      case contractorTaskDetail:
+        return 'Task Details';
+      case contractorCompleted:
+        return 'Completed Tasks';
+      case contractorChat:
+        return 'Chat with Admin';
+      case contractorProfile:
+        return 'Profile';
 
       // Admin
-      case adminDashboard: return 'Admin Dashboard';
-      case adminComplaints: return 'All Complaints';
-      case adminComplaintDetail: return 'Complaint Details';
-      case adminAssignment: return 'Assign Complaints';
-      case adminContractors: return 'Manage Contractors';
-      case adminContractorCreate: return 'Create Contractor';
-      case adminContractorDetail: return 'Contractor Details';
-      case adminChatManagement: return 'Chat Management';
-      case adminChatDetail: return 'Chat Details';
-      case adminSettings: return 'Settings';
+      case adminDashboard:
+        return 'Admin Dashboard';
+      case adminComplaints:
+        return 'All Complaints';
+      case adminComplaintDetail:
+        return 'Complaint Details';
+      case adminAssignment:
+        return 'Assign Complaints';
+      case adminContractors:
+        return 'Manage Contractors';
+      case adminContractorCreate:
+        return 'Create Contractor';
+      case adminContractorDetail:
+        return 'Contractor Details';
+      case adminChatManagement:
+        return 'Chat Management';
+      case adminChatDetail:
+        return 'Chat Details';
+      case adminSettings:
+        return 'Settings';
 
-      default: return 'SRSCS';
+      default:
+        return 'SRSCS';
     }
   }
 }
@@ -158,7 +217,7 @@ class AppRoutes {
 class NavItem {
   final String label;
   final String route;
-  final String icon;
+  final Icon icon;
 
   NavItem({
     required this.label,
