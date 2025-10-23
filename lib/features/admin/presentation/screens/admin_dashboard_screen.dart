@@ -401,12 +401,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+              colors: [
+                color.withValues(alpha: 0.1),
+                color.withValues(alpha: 0.05)
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(12),
           ),
+          constraints: const BoxConstraints(minHeight: 300),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

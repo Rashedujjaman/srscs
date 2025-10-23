@@ -4,6 +4,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'auth_service.dart';
+import '../core/constants/user_roles.dart';
 
 /// Background message handler (must be top-level function)
 @pragma('vm:entry-point')
@@ -90,20 +92,40 @@ class NotificationService {
   Future<void> _saveFCMTokenToFirestore(String token) async {
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId != null) {
-        await _firestore.collection('citizens').doc(userId).set({
-          'fcmToken': token,
-          'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
-          'deviceInfo': {
-            'platform': GetPlatform.isAndroid ? 'android' : 'ios',
-            'lastActive': FieldValue.serverTimestamp(),
-          }
-        }, SetOptions(merge: true));
 
-        print('✅ FCM token saved to Firestore for user: $userId');
+      if (userId != null) {
+        final userRole = AuthService().getUserRole(userId);
+        if (userRole == UserRole.citizen) {
+          await _firestore.collection('citizens').doc(userId).set({
+            'fcmToken': token,
+            'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+            'deviceInfo': {
+              'platform': GetPlatform.isAndroid ? 'android' : 'ios',
+              'lastActive': FieldValue.serverTimestamp(),
+            }
+          }, SetOptions(merge: true));
+        } else if (userRole == UserRole.contractor) {
+          await _firestore.collection('contractors').doc(userId).set({
+            'fcmToken': token,
+            'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+            'deviceInfo': {
+              'platform': GetPlatform.isAndroid ? 'android' : 'ios',
+              'lastActive': FieldValue.serverTimestamp(),
+            }
+          }, SetOptions(merge: true));
+        } else if (userRole == UserRole.admin) {
+          await _firestore.collection('admins').doc(userId).set({
+            'fcmToken': token,
+            'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+            'deviceInfo': {
+              'platform': GetPlatform.isAndroid ? 'android' : 'ios',
+              'lastActive': FieldValue.serverTimestamp(),
+            }
+          }, SetOptions(merge: true));
+        }
       }
     } catch (e) {
-      print('❌ Error saving FCM token to Firestore: $e');
+      rethrow;
     }
   }
 
