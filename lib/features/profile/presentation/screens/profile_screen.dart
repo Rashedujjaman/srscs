@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:srscs/core/routes/app_routes.dart';
 import 'package:srscs/features/complaint/data/models/complaint_model.dart';
 import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
 import '../../domain/entities/profile_entity.dart';
@@ -414,7 +415,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'Chat with Admin',
             color: Colors.blue,
             onTap: () {
-              Get.toNamed('/chat');
+              Get.toNamed(AppRoutes.citizenChat);
             },
           ),
           const SizedBox(height: 12),
@@ -423,7 +424,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'View All Complaints',
             color: Colors.orange,
             onTap: () {
-              Get.toNamed('/tracking');
+              Get.toNamed(AppRoutes.trackComplaints);
             },
           ),
           const SizedBox(height: 12),
@@ -452,7 +453,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
               if (confirm == true) {
                 await FirebaseAuth.instance.signOut();
-                Get.offAllNamed('/login');
+                Get.offAllNamed(AppRoutes.login);
               }
             },
           ),
@@ -561,7 +562,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               TextButton(
                 onPressed: () {
-                  Get.toNamed('/tracking');
+                  Get.toNamed(AppRoutes.trackComplaints);
                 },
                 child: const Text('View All'),
               ),

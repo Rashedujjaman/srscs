@@ -94,37 +94,33 @@ class NotificationService {
       final userId = FirebaseAuth.instance.currentUser?.uid;
 
       if (userId != null) {
-        final userRole = AuthService().getUserRole(userId);
+        final userRole = await AuthService().getUserRole(userId);
+
+        String collection;
         if (userRole == UserRole.citizen) {
-          await _firestore.collection('citizens').doc(userId).set({
-            'fcmToken': token,
-            'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
-            'deviceInfo': {
-              'platform': GetPlatform.isAndroid ? 'android' : 'ios',
-              'lastActive': FieldValue.serverTimestamp(),
-            }
-          }, SetOptions(merge: true));
+          collection = 'citizens';
         } else if (userRole == UserRole.contractor) {
-          await _firestore.collection('contractors').doc(userId).set({
-            'fcmToken': token,
-            'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
-            'deviceInfo': {
-              'platform': GetPlatform.isAndroid ? 'android' : 'ios',
-              'lastActive': FieldValue.serverTimestamp(),
-            }
-          }, SetOptions(merge: true));
+          collection = 'contractors';
         } else if (userRole == UserRole.admin) {
-          await _firestore.collection('admins').doc(userId).set({
-            'fcmToken': token,
-            'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
-            'deviceInfo': {
-              'platform': GetPlatform.isAndroid ? 'android' : 'ios',
-              'lastActive': FieldValue.serverTimestamp(),
-            }
-          }, SetOptions(merge: true));
+          collection = 'admins';
+        } else {
+          // Default to citizens if role is unknown
+          collection = 'citizens';
         }
+
+        await _firestore.collection(collection).doc(userId).set({
+          'fcmToken': token,
+          'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+          'deviceInfo': {
+            'platform': GetPlatform.isAndroid ? 'android' : 'ios',
+            'lastActive': FieldValue.serverTimestamp(),
+          }
+        }, SetOptions(merge: true));
+
+        print('✅ FCM token saved to $collection for user: $userId');
       }
     } catch (e) {
+      print('❌ Error saving FCM token: $e');
       rethrow;
     }
   }
@@ -354,6 +350,19 @@ class NotificationService {
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
+        final userRole = await AuthService().getUserRole(userId);
+
+        String collection;
+        if (userRole == UserRole.citizen) {
+          collection = 'citizens';
+        } else if (userRole == UserRole.contractor) {
+          collection = 'contractors';
+        } else if (userRole == UserRole.admin) {
+          collection = 'admins';
+        } else {
+          collection = 'citizens';
+        }
+
         Map<String, bool> preferences = {};
 
         if (complaintUpdates != null) {
@@ -369,11 +378,11 @@ class NotificationService {
           preferences['newsAlerts'] = newsAlerts;
         }
 
-        await _firestore.collection('citizens').doc(userId).set({
+        await _firestore.collection(collection).doc(userId).set({
           'notificationPreferences': preferences,
         }, SetOptions(merge: true));
 
-        print('✅ Notification preferences updated');
+        print('✅ Notification preferences updated for $collection');
       }
     } catch (e) {
       print('❌ Error updating notification preferences: $e');
@@ -385,7 +394,20 @@ class NotificationService {
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
-        final doc = await _firestore.collection('citizens').doc(userId).get();
+        final userRole = await AuthService().getUserRole(userId);
+
+        String collection;
+        if (userRole == UserRole.citizen) {
+          collection = 'citizens';
+        } else if (userRole == UserRole.contractor) {
+          collection = 'contractors';
+        } else if (userRole == UserRole.admin) {
+          collection = 'admins';
+        } else {
+          collection = 'citizens';
+        }
+
+        final doc = await _firestore.collection(collection).doc(userId).get();
         final prefs =
             doc.data()?['notificationPreferences'] as Map<String, dynamic>?;
 

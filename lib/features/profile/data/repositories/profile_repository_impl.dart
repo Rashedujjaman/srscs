@@ -13,7 +13,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       return await remoteDataSource.getProfile(userId);
     } catch (e) {
-      print('Error in ProfileRepository.getProfile: $e');
       rethrow;
     }
   }
