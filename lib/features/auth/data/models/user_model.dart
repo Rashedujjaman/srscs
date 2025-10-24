@@ -6,7 +6,7 @@ class UserModel extends UserEntity {
     required String id,
     required String nid,
     required String fullName,
-    DateTime? dob,
+    String? dob,
     String? address,
     String? bloodGroup,
     String? imageUrl,
@@ -26,12 +26,11 @@ class UserModel extends UserEntity {
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
-    final Timestamp? ts = data['dob'] as Timestamp?;
     return UserModel(
         id: doc.id,
         nid: data['nid']?.toString() ?? '',
         fullName: data['fullName'] ?? '',
-        dob: ts?.toDate(),
+        dob: data['dob'],
         address: data['address'],
         bloodGroup: data['bloodGroup'],
         imageUrl: data['imageUrl'],
@@ -43,7 +42,7 @@ class UserModel extends UserEntity {
     return {
       'nid': nid,
       'fullName': fullName,
-      'dob': dob != null ? Timestamp.fromDate(dob!) : null,
+      'dob': dob,
       'address': address,
       'bloodGroup': bloodGroup,
       'imageUrl': imageUrl,

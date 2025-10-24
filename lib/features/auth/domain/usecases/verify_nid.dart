@@ -1,4 +1,4 @@
-import '../entities/user_entity.dart';
+import 'package:srscs/features/auth/data/models/user_model.dart';
 import '../repositories/auth_repository.dart';
 
 class VerifyNid {
@@ -6,7 +6,7 @@ class VerifyNid {
 
   VerifyNid(this.repository);
 
-  Future<UserEntity> call({required String nid, required DateTime dob}) async {
+  Future<UserModel> call({required String nid, required String dob}) async {
     return await repository.verifyNid(nid: nid, dob: dob);
   }
 }

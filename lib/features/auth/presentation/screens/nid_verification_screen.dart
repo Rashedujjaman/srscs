@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:srscs/core/routes/app_routes.dart';
 import '../providers/auth_provider.dart';
-import 'register_screen.dart';
 
 class NIDVerificationScreen extends StatefulWidget {
   final String nid;
@@ -45,36 +45,22 @@ class _NIDVerificationScreenState extends State<NIDVerificationScreen> {
       return;
     }
 
-    DateTime? parsedDob;
-    try {
-      final temp = DateTime.parse(dobInput); // from user input
-      parsedDob = DateTime(temp.year, temp.month, temp.day); // match Firestore
-    } catch (_) {
-      _showSnackBar("Invalid date format. Use YYYY-MM-DD", isError: true);
-      return;
-    }
-
     // call provider usecase
-    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final provider = Provider.of<AuthProvider>(context, listen: false);
     setState(() => _isLoading = true);
-    await auth.verify(nid, parsedDob);
+    await provider.verify(nid, dobInput);
 
     setState(() => _isLoading = false);
 
-    if (auth.state == AuthState.error) {
-      _showSnackBar(auth.errorMessage ?? 'Verification failed', isError: true);
+    if (provider.state == AuthState.error) {
+      _showSnackBar(provider.errorMessage ?? 'Verification failed',
+          isError: true);
       return;
     }
 
-    if (auth.state == AuthState.success && auth.verifiedUser != null) {
-      final u = auth.verifiedUser!;
-      Get.to(() => RegisterScreen(prefilledData: {
-            'nid': u.nid,
-            'fullName': u.fullName,
-            'dob': u.dob,
-            'address': u.address ?? '',
-            'bloodGroup': u.bloodGroup ?? '',
-          }));
+    if (provider.state == AuthState.success &&
+        provider.verifiedCitizen != null) {
+      Get.toNamed(AppRoutes.register, arguments: provider.verifiedCitizen);
     }
   }
 
@@ -133,8 +119,9 @@ class _NIDVerificationScreenState extends State<NIDVerificationScreen> {
                 onTap: () async {
                   DateTime? pickedDate = await showDatePicker(
                     context: context,
-                    initialDate: DateTime(2000),
-                    firstDate: DateTime(1900),
+                    initialDate:
+                        DateTime.now().subtract(const Duration(days: 365 * 18)),
+                    firstDate: DateTime(1925),
                     lastDate: DateTime.now(),
                   );
 

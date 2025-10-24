@@ -238,7 +238,7 @@ class MyApp extends StatelessWidget {
           GetPage(name: AppRoutes.login, page: () => const LoginScreen()),
           GetPage(
             name: AppRoutes.register,
-            page: () => RegisterScreen(prefilledData: const {}),
+            page: () => const RegisterScreen(),
           ),
           GetPage(
             name: AppRoutes.forgotPassword,

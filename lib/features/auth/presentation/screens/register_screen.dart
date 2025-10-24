@@ -2,38 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:srscs/features/auth/data/models/user_model.dart';
 
 class RegisterScreen extends StatefulWidget {
-  final Map<String, dynamic> prefilledData;
-
-  const RegisterScreen({super.key, required this.prefilledData});
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _isLoading = false;
 
+  late UserModel citizenData;
+
+  @override
+  void initState() {
+    super.initState();
+    citizenData = Get.arguments as UserModel;
+  }
+
   void _register() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     final email = _emailCtrl.text.trim();
     final phone = _phoneCtrl.text.trim();
     final pass = _passCtrl.text.trim();
-    final confirm = _confirmCtrl.text.trim();
-
-    if (email.isEmpty || phone.isEmpty || pass.isEmpty || confirm.isEmpty) {
-      _showError("Please fill all fields.");
-      return;
-    }
-
-    if (pass != confirm) {
-      _showError("Passwords do not match.");
-      return;
-    }
 
     setState(() => _isLoading = true);
     UserCredential? authResult;
@@ -45,23 +46,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final uid = authResult.user!.uid;
 
       // Step 2: Prepare Firestore data
-      final fullName = widget.prefilledData['fullName']?.toString() ?? '';
-      final nid = widget.prefilledData['nid']?.toString() ?? '';
-      final address = widget.prefilledData['address']?.toString() ?? '';
-      final blood = widget.prefilledData['bloodGroup']?.toString() ?? '';
-      final dob = widget.prefilledData['dob'];
+      final newUserData = citizenData.toFirestore();
+      newUserData['phoneNumber'] = phone;
+      newUserData['email'] = email;
 
       // Step 3: Save Firestore user data
-      await FirebaseFirestore.instance.collection('citizens').doc(uid).set({
-        'nid': nid,
-        'fullName': fullName,
-        'dob': dob is Timestamp ? dob.toDate() : dob,
-        'address': address,
-        'bloodGroup': blood,
-        'email': email,
-        'phone': phone,
-        'createdAt': Timestamp.now(),
-      });
+      await FirebaseFirestore.instance
+          .collection('citizens')
+          .doc(uid)
+          .set(newUserData);
 
       // Step 4: Send email verification
       await authResult.user!.sendEmailVerification();
@@ -95,57 +88,127 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final data = widget.prefilledData;
-
     return Scaffold(
       appBar: AppBar(title: const Text("Create Account")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            _readonlyField("NID Number", data['nid'] ?? ''),
-            _readonlyField("Full Name", data['fullName'] ?? ''),
-            _readonlyField("Date of Birth", _formatDate(data['dob'])),
-            _readonlyField("Address", data['address'] ?? ''),
-            _readonlyField("Blood Group", data['bloodGroup'] ?? ''),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: "Gmail"),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _phoneCtrl,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: "Phone Number"),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _passCtrl,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: "Password"),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _confirmCtrl,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: "Confirm Password"),
-            ),
-            const SizedBox(height: 20),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _register,
-                    child: const Text("Register"),
-                  ),
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              if (citizenData.imageUrl != null &&
+                  citizenData.imageUrl!.isNotEmpty) ...[
+                _buildImageSection(),
+              ],
+              const SizedBox(height: 20),
+              _readonlyField("NID Number", citizenData.nid),
+              _readonlyField("Full Name", citizenData.fullName),
+              _readonlyField("Date of Birth", citizenData.dob),
+              _readonlyField("Address", citizenData.address),
+              _readonlyField("Blood Group", citizenData.bloodGroup),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: "Gmail",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter email';
+                  }
+                  final emailRegex =
+                      RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                  if (!emailRegex.hasMatch(value.trim())) {
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  labelText: "Phone Number",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter phone number';
+                  }
+                  // Bangladesh phone number validation (11 digits starting with 01)
+                  final phoneRegex = RegExp(r'^01[0-9]{9}$');
+                  if (!phoneRegex.hasMatch(value.trim())) {
+                    return 'Please enter a valid BD phone number (01XXXXXXXXX)';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _passCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Password",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter password';
+                  }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _confirmCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Confirm Password",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please confirm password';
+                  }
+                  if (value != _passCtrl.text) {
+                    return 'Passwords do not match';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ElevatedButton(
+                        onPressed: _register,
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          "Register",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _readonlyField(String label, String value) {
+  Widget _readonlyField(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
@@ -159,11 +222,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  String _formatDate(dynamic timestamp) {
-    if (timestamp is Timestamp) {
-      final date = timestamp.toDate();
-      return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-    }
-    return timestamp.toString();
+  Widget _buildImageSection() {
+    final imageUrl = citizenData.imageUrl;
+    return CircleAvatar(
+      radius: 60,
+      backgroundColor: Colors.grey[300],
+      backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
+          ? NetworkImage(imageUrl)
+          : null,
+      child: (imageUrl == null || imageUrl.isEmpty)
+          ? const Icon(Icons.person, size: 60, color: Colors.white)
+          : null,
+    );
   }
 }

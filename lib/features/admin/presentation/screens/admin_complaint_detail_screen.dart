@@ -823,6 +823,8 @@ class _AdminComplaintDetailScreenState
                 itemBuilder: (context, index) {
                   final contractor = contractors[index];
                   return ListTile(
+                    style: ListTileStyle.drawer,
+                    dense: true,
                     leading: CircleAvatar(
                       backgroundColor: Colors.blue[100],
                       child: Icon(Icons.person, color: Colors.blue[700]),

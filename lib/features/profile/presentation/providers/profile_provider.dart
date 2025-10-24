@@ -56,7 +56,7 @@ class ProfileProvider with ChangeNotifier {
     required String phone,
     required String address,
     required String bloodGroup,
-    required DateTime dob,
+    required String dob,
   }) async {
     final userId = currentUserId;
     if (userId == null) {

@@ -207,14 +207,14 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                  Get.toNamed('/forgot');
+                  Get.toNamed(AppRoutes.forgotPassword);
                 },
                 child: const Text("Click Here To Reset Your Password"),
               ),
               const SizedBox(height: 10),
               TextButton(
                 onPressed: () {
-                  Get.toNamed('/nid');
+                  Get.toNamed(AppRoutes.nidVerification);
                 },
                 child: const Text(
                   "Don't have an Account?\nRegister now",

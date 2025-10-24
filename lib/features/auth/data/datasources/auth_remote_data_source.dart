@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> fetchByNid({required String nid, required DateTime dob});
+  Future<UserModel> fetchByNid({required String nid, required String dob});
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -13,13 +13,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<UserModel> fetchByNid(
-      {required String nid, required DateTime dob}) async {
+      {required String nid, required String dob}) async {
     try {
-      // final ts = Timestamp.fromDate(DateTime(dob.year, dob.month, dob.day, 6));
       final query = await firestore
           .collection('nid_sample')
           .where('nid', isEqualTo: nid)
-          // .where('dob', isEqualTo: ts)
+          .where('dob', isEqualTo: dob)
           .limit(1)
           .get();
 
@@ -29,7 +28,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       return UserModel.fromFirestore(query.docs.first);
     } catch (e) {
-      print('Error in fetchByNid for NID $nid: $e');
       if (e.toString().contains('No matching NID found')) {
         rethrow;
       }

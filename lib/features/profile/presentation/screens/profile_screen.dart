@@ -304,10 +304,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildPersonalInfo(ProfileEntity profile) {
-    final formattedDob = profile.dob != null
-        ? DateFormat('dd MMM yyyy').format(profile.dob!)
-        : 'Not specified';
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
@@ -335,9 +331,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           _buildInfoTile(Icons.badge, 'NID Number', profile.nid),
-          _buildInfoTile(Icons.phone, 'Phone', profile.phone),
+          _buildInfoTile(Icons.phone, 'Phone', profile.phoneNumber),
           _buildInfoTile(Icons.location_on, 'Address', profile.address),
-          _buildInfoTile(Icons.cake, 'Date of Birth', formattedDob),
+          _buildInfoTile(Icons.cake, 'Date of Birth', profile.dob),
           _buildInfoTile(Icons.bloodtype, 'Blood Group',
               profile.bloodGroup ?? 'Not specified'),
         ],

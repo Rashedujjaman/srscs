@@ -545,7 +545,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ),
         onTap: () {
-          Get.toNamed(AppRoutes.adminComplaintDetail, arguments: complaint);
+          Get.toNamed(AppRoutes.adminComplaintDetail, arguments: complaint.id);
         },
       ),
     );

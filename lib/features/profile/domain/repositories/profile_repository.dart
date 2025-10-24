@@ -11,7 +11,7 @@ abstract class ProfileRepository {
     required String phone,
     required String address,
     required String bloodGroup,
-    required DateTime dob,
+    required String dob,
   });
 
   /// Upload profile photo and return download URL

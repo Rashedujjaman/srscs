@@ -11,7 +11,7 @@ class UpdateProfile {
     required String phone,
     required String address,
     required String bloodGroup,
-    required DateTime dob,
+    required String dob,
   }) async {
     try {
       await repository.updateProfile(

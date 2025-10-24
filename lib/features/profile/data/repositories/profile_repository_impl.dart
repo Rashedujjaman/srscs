@@ -25,7 +25,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required String phone,
     required String address,
     required String bloodGroup,
-    required DateTime dob,
+    required String dob,
   }) async {
     try {
       final data = {
@@ -33,7 +33,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         'phone': phone,
         'address': address,
         'bloodGroup': bloodGroup,
-        'dob': Timestamp.fromDate(dob),
+        'dob': dob,
         'updatedAt': FieldValue.serverTimestamp(),
       };
 

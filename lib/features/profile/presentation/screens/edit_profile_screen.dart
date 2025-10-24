@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../providers/profile_provider.dart';
@@ -22,7 +21,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _phoneController = TextEditingController(text: widget.profile.phone);
+    _phoneController = TextEditingController(text: widget.profile.phoneNumber);
   }
 
   @override
@@ -47,7 +46,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         phone: _phoneController.text.trim(),
         address: widget.profile.address ?? '',
         bloodGroup: widget.profile.bloodGroup ?? '',
-        dob: widget.profile.dob ?? DateTime.now(),
+        dob: widget.profile.dob ?? '',
       );
 
       if (!mounted) return;
@@ -171,8 +170,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     _buildInfoRow(
                         'Date Of Birth',
                         widget.profile.dob != null
-                            ? DateFormat('dd MMM yyyy')
-                                .format(widget.profile.dob!)
+                            ? widget.profile.dob!
                             : 'Not specified'),
                   ],
                 ),

@@ -3,10 +3,10 @@ class ProfileEntity {
   final String nid;
   final String fullName;
   final String email;
-  final String? phone;
+  final String? phoneNumber;
   final String? address;
   final String? bloodGroup;
-  final DateTime? dob;
+  final String? dob;
   final String? profilePhotoUrl;
   final DateTime? updatedAt;
 
@@ -15,7 +15,7 @@ class ProfileEntity {
     required this.nid,
     required this.fullName,
     required this.email,
-    this.phone,
+    this.phoneNumber,
     this.address,
     this.bloodGroup,
     this.dob,
@@ -31,7 +31,7 @@ class ProfileEntity {
     String? phone,
     String? address,
     String? bloodGroup,
-    DateTime? dob,
+    String? dob,
     String? profilePhotoUrl,
     DateTime? updatedAt,
   }) {
@@ -40,7 +40,7 @@ class ProfileEntity {
       nid: nid ?? this.nid,
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
-      phone: phone ?? this.phone,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       address: address ?? this.address,
       bloodGroup: bloodGroup ?? this.bloodGroup,
       dob: dob ?? this.dob,
