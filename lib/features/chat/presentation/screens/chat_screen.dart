@@ -410,10 +410,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildMessageBubble(ChatMessageEntity message, String currentUserId) {
-    final isMe = message.senderId == currentUserId;
+    // Admin messages always on left side
+    final isAdmin = message.isAdmin;
 
     return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: isAdmin ? Alignment.centerLeft : Alignment.centerRight,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
@@ -421,28 +422,29 @@ class _ChatScreenState extends State<ChatScreen> {
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
-          color: isMe ? const Color(0xFF9F7AEA) : Colors.grey[300],
+          color: !isAdmin ? const Color(0xFF9F7AEA) : Colors.grey[300],
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),
-            bottomLeft: isMe ? const Radius.circular(12) : Radius.zero,
-            bottomRight: isMe ? Radius.zero : const Radius.circular(12),
+            bottomLeft: !isAdmin ? const Radius.circular(12) : Radius.zero,
+            bottomRight: !isAdmin ? Radius.zero : const Radius.circular(12),
           ),
         ),
         child: Column(
           crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              !isAdmin ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            if (!isMe)
+            // Show sender name for messages not from current user
+            if (!isAdmin)
               Text(
-                message.isAdmin ? 'Admin' : message.senderName,
+                isAdmin ? 'Admin' : message.senderName,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isMe ? Colors.white70 : Colors.black54,
+                  color: isAdmin ? Colors.white70 : Colors.black54,
                 ),
               ),
-            if (!isMe) const SizedBox(height: 4),
+            if (!isAdmin) const SizedBox(height: 4),
 
             // Media Content
             if (message.type == MessageType.image && message.mediaUrl != null)
@@ -484,7 +486,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isMe ? Colors.white24 : Colors.white,
+                    color: !isAdmin ? Colors.white24 : Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -492,7 +494,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     children: [
                       Icon(
                         Icons.insert_drive_file,
-                        color: isMe ? Colors.white : Colors.black54,
+                        color: !isAdmin ? Colors.white : Colors.black54,
                       ),
                       const SizedBox(width: 8),
                       Flexible(
@@ -500,7 +502,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           message.message,
                           style: TextStyle(
                             fontSize: 14,
-                            color: isMe ? Colors.white : Colors.black87,
+                            color: !isAdmin ? Colors.white : Colors.black87,
                           ),
                         ),
                       ),
@@ -523,7 +525,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   message.message,
                   style: TextStyle(
                     fontSize: 15,
-                    color: isMe ? Colors.white : Colors.black87,
+                    color: !isAdmin ? Colors.white : Colors.black87,
                   ),
                 ),
               ),
@@ -533,7 +535,7 @@ class _ChatScreenState extends State<ChatScreen> {
               DateFormat('hh:mm a').format(message.timestamp),
               style: TextStyle(
                 fontSize: 10,
-                color: isMe ? Colors.white70 : Colors.black45,
+                color: !isAdmin ? Colors.white70 : Colors.black45,
               ),
             ),
           ],
