@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:srscs/core/routes/app_routes.dart';
 import 'package:srscs/core/routes/route_manager.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../widgets/statistics_card.dart';
@@ -246,8 +247,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Build AppBar
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     return AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: theme.primaryColor,
       elevation: 0,
       toolbarHeight: 70,
       automaticallyImplyLeading: false,

@@ -11,7 +11,6 @@ import 'firebase_options.dart';
 
 // Core Routes
 import 'core/routes/app_routes.dart';
-import 'core/routes/route_manager.dart';
 import 'core/routes/route_guard_middleware.dart';
 
 // Auth
@@ -88,6 +87,9 @@ import 'features/contractor/presentation/screens/contractor_tasks_screen.dart';
 import 'features/contractor/presentation/screens/contractor_task_detail_screen.dart';
 import 'features/contractor/presentation/screens/contractor_completed_tasks_screen.dart';
 
+// Theme
+import 'core/theme/app_theme_provider.dart';
+
 // ONE-TIME DATABASE SEEDER (uncomment to run once, then comment out again)
 // import 'features/dashboard/data/datasources/seed_dashboard_data.dart';
 
@@ -101,8 +103,6 @@ void main() async {
   );
 
   // 🔥 Configure Firebase Realtime Database
-  // ⚠️ Use the DATABASE URL, not the console URL!
-  // Correct format: https://PROJECT-ID-default-rtdb.REGION.firebasedatabase.app/
   FirebaseDatabase.instance.databaseURL =
       'https://srscs-58227-default-rtdb.asia-southeast1.firebasedatabase.app/';
 
@@ -184,6 +184,7 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AppThemeProvider()),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(verifyNidUsecase: verifyNidUsecase),
         ),

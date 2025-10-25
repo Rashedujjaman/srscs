@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:provider/provider.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
 import 'dart:io';
 import '../../domain/entities/chat_message_entity.dart';
 import '../../data/datasources/chat_remote_data_source.dart';
@@ -232,6 +234,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -244,7 +247,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF9F7AEA),
+        backgroundColor: theme.primaryColor,
       ),
       body: Column(
         children: [
@@ -366,7 +369,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
               children: [
                 // Attachment Button
                 IconButton(
-                  icon: const Icon(Icons.attach_file, color: Color(0xFF9F7AEA)),
+                  icon: Icon(Icons.attach_file, color: theme.primaryColor),
                   onPressed: _isUploading ? null : _showMediaOptions,
                 ),
                 // Text Input
@@ -390,7 +393,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
                 const SizedBox(width: 8),
                 // Send Button
                 CircleAvatar(
-                  backgroundColor: const Color(0xFF9F7AEA),
+                  backgroundColor: theme.primaryColor,
                   child: IconButton(
                     icon: const Icon(Icons.send, color: Colors.white),
                     onPressed: _isUploading ? null : _sendMessage,
@@ -406,6 +409,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
 
   Widget _buildMessageBubble(ChatMessageEntity message) {
     final isAdmin = message.isAdmin;
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
 
     return Align(
       alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
@@ -416,7 +420,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
-          color: isAdmin ? const Color(0xFF9F7AEA) : Colors.grey[300],
+          color: isAdmin ? theme.primaryColor : Colors.grey[300],
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),

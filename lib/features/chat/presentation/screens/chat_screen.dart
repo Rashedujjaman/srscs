@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:srscs/core/constants/user_roles.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
 import 'package:srscs/services/auth_service.dart';
 import 'dart:io';
 import '../../domain/entities/chat_message_entity.dart';
@@ -25,12 +26,14 @@ class _ChatScreenState extends State<ChatScreen> {
   final _imagePicker = ImagePicker();
   bool _isUploading = false;
   String? _cachedUserName;
-  Color _primaryColor = const Color(0xFF9F7AEA);
   String? _collectionName;
+  Color _primaryColor = const Color(0xFF9F7AEA);
 
   @override
   void initState() {
     super.initState();
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
+    _primaryColor = theme.primaryColor;
     _fetchUserRole();
   }
 

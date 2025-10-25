@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
 import '../../../../services/auth_service.dart';
 import '../../../../core/routes/app_routes.dart';
+import 'package:provider/provider.dart';
 
 /// Splash Screen - Checks authentication and redirects based on role
 class SplashScreen extends StatefulWidget {
@@ -18,6 +20,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appThemeProvider =
+          Provider.of<AppThemeProvider>(context, listen: false);
+      appThemeProvider.initialize();
+    });
     _checkAuthAndRedirect();
   }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
 import 'admin_chat_detail_screen.dart';
 
 class AdminChatListScreen extends StatelessWidget {
@@ -8,10 +10,11 @@ class AdminChatListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chat Management'),
-        backgroundColor: const Color(0xFF9F7AEA),
+        backgroundColor: theme.primaryColor,
       ),
       body: StreamBuilder<DatabaseEvent>(
         stream: FirebaseDatabase.instance.ref('chats').onValue,
@@ -87,11 +90,13 @@ class AdminChatListScreen extends StatelessWidget {
       timeLabel = DateFormat('MM/dd/yyyy').format(lastMessageDate);
     }
 
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: const Color(0xFF9F7AEA),
+          backgroundColor: theme.primaryColor,
           child: Text(
             session.userName[0].toUpperCase(),
             style: const TextStyle(color: Colors.white),
