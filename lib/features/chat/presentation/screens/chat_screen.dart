@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:srscs/core/constants/user_roles.dart';
+import 'package:srscs/services/auth_service.dart';
 import 'dart:io';
 import '../../domain/entities/chat_message_entity.dart';
 import '../providers/chat_provider.dart';
@@ -23,6 +25,14 @@ class _ChatScreenState extends State<ChatScreen> {
   final _imagePicker = ImagePicker();
   bool _isUploading = false;
   String? _cachedUserName;
+  Color _primaryColor = const Color(0xFF9F7AEA);
+  String? _collectionName;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserRole();
+  }
 
   @override
   void dispose() {
@@ -40,7 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (user == null) return 'User';
 
       final doc = await FirebaseFirestore.instance
-          .collection('citizens')
+          .collection(_collectionName ?? 'citizens')
           .doc(user.uid)
           .get();
 
@@ -54,6 +64,35 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final user = FirebaseAuth.instance.currentUser;
     return user?.email ?? 'User';
+  }
+
+  /// Fetch user's role to determine collection name and color theme
+  Future<void> _fetchUserRole() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final authService = AuthService();
+    final role = await authService.getUserRole(user.uid);
+
+    switch (role) {
+      case UserRole.citizen:
+        setState(() {
+          _collectionName = 'citizens';
+          _primaryColor = UserRoleExtension(UserRole.citizen).color;
+        });
+        break;
+      case UserRole.contractor:
+        setState(() {
+          _collectionName = 'contractors';
+          _primaryColor = UserRoleExtension(UserRole.contractor).color;
+        });
+        break;
+      default:
+        setState(() {
+          _collectionName = 'users';
+          _primaryColor = Colors.grey;
+        });
+    }
   }
 
   void _scrollToBottom() {
@@ -252,7 +291,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chat with Admin'),
-        backgroundColor: const Color(0xFF9F7AEA),
+        backgroundColor: _primaryColor,
       ),
       body: Column(
         children: [
@@ -395,7 +434,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 const SizedBox(width: 8),
                 // Send Button
                 CircleAvatar(
-                  backgroundColor: const Color(0xFF9F7AEA),
+                  backgroundColor: _primaryColor,
                   child: IconButton(
                     icon: const Icon(Icons.send, color: Colors.white),
                     onPressed: _isUploading ? null : _sendMessage,
@@ -422,7 +461,7 @@ class _ChatScreenState extends State<ChatScreen> {
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
-          color: !isAdmin ? const Color(0xFF9F7AEA) : Colors.grey[300],
+          color: !isAdmin ? _primaryColor : Colors.grey[300],
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),
@@ -435,13 +474,13 @@ class _ChatScreenState extends State<ChatScreen> {
               !isAdmin ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             // Show sender name for messages not from current user
-            if (!isAdmin)
+            if (isAdmin)
               Text(
                 isAdmin ? 'Admin' : message.senderName,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isAdmin ? Colors.white70 : Colors.black54,
+                  color: !isAdmin ? Colors.white70 : Colors.black54,
                 ),
               ),
             if (!isAdmin) const SizedBox(height: 4),

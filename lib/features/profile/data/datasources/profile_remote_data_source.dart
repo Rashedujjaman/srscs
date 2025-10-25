@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../models/profile_model.dart';
+import '../../../../services/auth_service.dart';
+import '../../../../core/constants/user_roles.dart';
 
 class ProfileRemoteDataSource {
   final FirebaseFirestore firestore;
@@ -14,10 +16,25 @@ class ProfileRemoteDataSource {
 
   Future<ProfileModel> getProfile(String userId) async {
     try {
-      final doc = await firestore.collection('citizens').doc(userId).get();
+      // Determine collection based on user role
+      final authService = AuthService();
+      final userRole = await authService.getUserRole(userId);
+
+      String collection;
+      if (userRole == UserRole.citizen) {
+        collection = 'citizens';
+      } else if (userRole == UserRole.contractor) {
+        collection = 'contractors';
+      } else if (userRole == UserRole.admin) {
+        collection = 'admins';
+      } else {
+        collection = 'citizens'; // fallback
+      }
+
+      final doc = await firestore.collection(collection).doc(userId).get();
 
       if (!doc.exists) {
-        throw Exception('Profile not found');
+        throw Exception('Profile not found in $collection collection');
       }
 
       return ProfileModel.fromFirestore(doc);
@@ -31,8 +48,24 @@ class ProfileRemoteDataSource {
     required Map<String, dynamic> data,
   }) async {
     try {
-      await firestore.collection('citizens').doc(userId).update(data);
+      // Determine collection based on user role
+      final authService = AuthService();
+      final userRole = await authService.getUserRole(userId);
+
+      String collection;
+      if (userRole == UserRole.citizen) {
+        collection = 'citizens';
+      } else if (userRole == UserRole.contractor) {
+        collection = 'contractors';
+      } else if (userRole == UserRole.admin) {
+        collection = 'admins';
+      } else {
+        collection = 'citizens'; // fallback
+      }
+
+      await firestore.collection(collection).doc(userId).update(data);
     } catch (e) {
+      print('❌ Error in updateProfile: $e');
       rethrow;
     }
   }
@@ -60,11 +93,27 @@ class ProfileRemoteDataSource {
     required String photoUrl,
   }) async {
     try {
-      await firestore.collection('citizens').doc(userId).update({
+      // Determine collection based on user role
+      final authService = AuthService();
+      final userRole = await authService.getUserRole(userId);
+
+      String collection;
+      if (userRole == UserRole.citizen) {
+        collection = 'citizens';
+      } else if (userRole == UserRole.contractor) {
+        collection = 'contractors';
+      } else if (userRole == UserRole.admin) {
+        collection = 'admins';
+      } else {
+        collection = 'citizens'; // fallback
+      }
+
+      await firestore.collection(collection).doc(userId).update({
         'imageUrl': photoUrl,
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
+      print('❌ Error in updateProfilePhotoUrl: $e');
       rethrow;
     }
   }

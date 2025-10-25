@@ -10,7 +10,6 @@ class GetProfile {
     try {
       return await repository.getProfile(userId);
     } catch (e) {
-      print('Error in GetProfile use case: $e');
       rethrow;
     }
   }

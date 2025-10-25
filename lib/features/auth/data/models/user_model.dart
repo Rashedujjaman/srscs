@@ -3,26 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel extends UserEntity {
   UserModel({
-    required String id,
-    required String nid,
-    required String fullName,
-    String? dob,
-    String? address,
-    String? bloodGroup,
-    String? imageUrl,
-    String? phoneNumber,
-    String? email,
-  }) : super(
-          id: id,
-          nid: nid,
-          fullName: fullName,
-          dob: dob,
-          address: address,
-          bloodGroup: bloodGroup,
-          imageUrl: imageUrl,
-          phoneNumber: phoneNumber,
-          email: email,
-        );
+    required super.id,
+    required super.nid,
+    required super.fullName,
+    super.dob,
+    super.address,
+    super.bloodGroup,
+    super.imageUrl,
+    super.phoneNumber,
+    super.email,
+  });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};

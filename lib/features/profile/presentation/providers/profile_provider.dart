@@ -31,6 +31,7 @@ class ProfileProvider with ChangeNotifier {
     final userId = currentUserId;
     if (userId == null) {
       _error = 'User not logged in';
+      _isLoading = false;
       notifyListeners();
       return;
     }
@@ -42,9 +43,11 @@ class ProfileProvider with ChangeNotifier {
     try {
       _profile = await getProfileUseCase(userId);
       _error = null;
+      print('✅ Profile loaded successfully for user: $userId');
     } catch (e) {
       _error = e.toString();
-      print('Error loading profile: $e');
+      _profile = null; // Clear profile on error
+      print('❌ Error loading profile: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

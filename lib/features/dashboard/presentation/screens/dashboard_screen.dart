@@ -26,9 +26,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Provider.of<DashboardProvider>(context, listen: false);
       final profileProvider =
           Provider.of<ProfileProvider>(context, listen: false);
-
-      dashboardProvider.loadDashboardData();
       profileProvider.loadProfile();
+      dashboardProvider.loadDashboardData();
     });
   }
 
@@ -278,6 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
+                textAlign: TextAlign.center,
               ),
               Consumer<DashboardProvider>(
                 builder: (context, dashboardProvider, child) {
