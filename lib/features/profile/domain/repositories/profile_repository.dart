@@ -1,8 +1,8 @@
-import '../entities/profile_entity.dart';
+import 'package:srscs/features/profile/data/models/profile_model.dart';
 
 abstract class ProfileRepository {
   /// Get user profile by user ID
-  Future<ProfileEntity> getProfile(String userId);
+  Future<ProfileModel> getProfile(String userId);
 
   /// Update user profile
   Future<void> updateProfile({

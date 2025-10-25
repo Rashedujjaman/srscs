@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../domain/entities/profile_entity.dart';
+import 'package:srscs/features/profile/data/models/profile_model.dart';
 import '../../domain/usecases/get_profile.dart';
 import '../../domain/usecases/update_profile.dart';
 import '../../domain/usecases/update_profile_photo.dart';
@@ -18,11 +18,11 @@ class ProfileProvider with ChangeNotifier {
     required this.firebaseAuth,
   });
 
-  ProfileEntity? _profile;
+  ProfileModel? _profile;
   bool _isLoading = false;
   String? _error;
 
-  ProfileEntity? get profile => _profile;
+  ProfileModel? get profile => _profile;
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get currentUserId => firebaseAuth.currentUser?.uid;
@@ -115,7 +115,7 @@ class ProfileProvider with ChangeNotifier {
 
       // Update local profile data
       if (_profile != null) {
-        _profile = _profile!.copyWith(profilePhotoUrl: photoUrl);
+        _profile = _profile?.copyWith(profilePhotoUrl: photoUrl);
       }
 
       _error = null;

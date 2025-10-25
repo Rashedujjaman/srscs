@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../domain/entities/profile_entity.dart';
+import 'package:srscs/features/profile/data/models/profile_model.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../datasources/profile_remote_data_source.dart';
 
@@ -9,7 +9,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   ProfileRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<ProfileEntity> getProfile(String userId) async {
+  Future<ProfileModel> getProfile(String userId) async {
     try {
       return await remoteDataSource.getProfile(userId);
     } catch (e) {

@@ -62,4 +62,30 @@ class ProfileModel extends ProfileEntity {
       updatedAt: entity.updatedAt,
     );
   }
+
+  ProfileModel copyWith({
+    String? id,
+    String? nid,
+    String? fullName,
+    String? email,
+    String? phoneNumber,
+    String? address,
+    String? bloodGroup,
+    String? dob,
+    String? profilePhotoUrl,
+    DateTime? updatedAt,
+  }) {
+    return ProfileModel(
+      id: id ?? this.id,
+      nid: nid ?? this.nid,
+      fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      address: address ?? this.address,
+      bloodGroup: bloodGroup ?? this.bloodGroup,
+      dob: dob ?? this.dob,
+      profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

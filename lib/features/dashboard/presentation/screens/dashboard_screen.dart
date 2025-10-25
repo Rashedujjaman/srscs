@@ -34,6 +34,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     return Scaffold(
       backgroundColor: const Color(0xFFFDF4FF),
       appBar: _buildAppBar(context),
@@ -85,13 +86,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Welcome message
                   Text(
                     profile != null
                         ? "Hello, ${profile.fullName.split(' ').last}!"
-                        : "Hello, Citizen!",
+                        : "Hello, User!",
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -104,6 +105,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       fontSize: 14,
                       color: Colors.grey,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
 
@@ -236,9 +238,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.toNamed('/submit-complaint'),
+        onPressed: () => Get.toNamed(AppRoutes.submitComplaint),
         tooltip: 'Submit Complaint',
-        backgroundColor: const Color(0xFF9F7AEA),
+        backgroundColor: theme.primaryColor,
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
@@ -251,83 +253,95 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return AppBar(
       backgroundColor: theme.primaryColor,
       elevation: 0,
-      toolbarHeight: 70,
+      // toolbarHeight: 70,
       automaticallyImplyLeading: false,
-      title: Consumer<ProfileProvider>(
-        builder: (context, profileProvider, child) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GestureDetector(
-                onTap: () => Get.toNamed('/profile'),
-                child: CircleAvatar(
-                  backgroundColor: const Color(0xFFE5D4FF),
-                  radius: 24,
-                  backgroundImage: profileProvider.profile?.profilePhotoUrl !=
-                          null
-                      ? NetworkImage(profileProvider.profile!.profilePhotoUrl!)
-                      : null,
-                  child: profileProvider.profile?.profilePhotoUrl == null
-                      ? const Icon(Icons.person, color: Colors.black)
-                      : null,
-                ),
-              ),
-              const Text(
-                'SRSCS',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              Consumer<DashboardProvider>(
-                builder: (context, dashboardProvider, child) {
-                  return Stack(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.notifications_none,
-                          color: Colors.black87,
-                        ),
-                        onPressed: () {
-                          _showAllNotices(
-                              context, dashboardProvider.noticesList);
-                        },
-                      ),
-                      if (dashboardProvider.unreadNoticeCount > 0)
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              '${dashboardProvider.unreadNoticeCount}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          );
-        },
+      // leading: Consumer<ProfileProvider>(
+      //   builder: (context, profileProvider, child) {
+      //     return GestureDetector(
+      //       onTap: () => Get.toNamed(AppRoutes.profile),
+      //       child: SizedBox(
+      //         width: 48,
+      //         height: 48,
+      //         child: ClipOval(
+      //           child: profileProvider.profile?.profilePhotoUrl != null &&
+      //                   profileProvider.profile!.profilePhotoUrl!.isNotEmpty
+      //               ? Image.network(
+      //                   profileProvider.profile!.profilePhotoUrl!,
+      //                   fit: BoxFit.cover,
+      //                   width: 48,
+      //                   height: 48,
+      //                   errorBuilder: (context, error, stackTrace) => Container(
+      //                     color: const Color(0xFFE5D4FF),
+      //                     alignment: Alignment.center,
+      //                     child: const Icon(Icons.person, color: Colors.black),
+      //                   ),
+      //                 )
+      //               : Container(
+      //                   color: const Color(0xFFE5D4FF),
+      //                   alignment: Alignment.center,
+      //                   child: const Icon(Icons.person, color: Colors.black),
+      //                 ),
+      //         ),
+      //       ),
+      //     );
+      //   },
+      // ),
+      title: const Text(
+        'SRSCS',
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+          // backgroundColor: Colors.red,
+        ),
+        textAlign: TextAlign.center,
       ),
+
+      centerTitle: true,
+      actions: [
+        Consumer<DashboardProvider>(
+          builder: (context, dashboardProvider, child) {
+            return Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.notifications_none,
+                    color: Colors.black87,
+                  ),
+                  onPressed: () {
+                    _showAllNotices(context, dashboardProvider.noticesList);
+                  },
+                ),
+                if (dashboardProvider.unreadNoticeCount > 0)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '${dashboardProvider.unreadNoticeCount}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 
