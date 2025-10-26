@@ -37,8 +37,7 @@ The notification service has been updated to support multiple devices per user a
       "addedAt": "timestamp"
     }
   ],
-  "fcmToken": "device-2-token", // Latest token (backward compatibility)
-  "fcmTokenUpdatedAt": "timestamp"
+  "lastFcmTokenUpdate": "timestamp"
 }
 ```
 

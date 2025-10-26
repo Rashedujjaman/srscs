@@ -148,11 +148,10 @@ class NotificationService {
           }).toList();
         }
 
-        // Save to Firestore with array of tokens
+        // Save to Firestore with array of tokens only
         await _firestore.collection(collection).doc(userId).set({
           'fcmTokens': existingTokens,
-          // 'fcmToken': token, // Keep for backward compatibility
-          'fcmTokenUpdatedAt': DateTime.now(),
+          'lastFcmTokenUpdate': DateTime.now(),
         }, SetOptions(merge: true));
 
         print(

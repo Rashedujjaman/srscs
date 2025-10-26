@@ -123,6 +123,14 @@ class _LoginScreenState extends State<LoginScreen> {
       _showMessage("Login Successful as $roleText");
       await Future.delayed(const Duration(seconds: 1));
 
+      // Initialize FCM token after successful login
+      try {
+        await NotificationService().initialize();
+        print('✅ FCM token registered after login');
+      } catch (e) {
+        print('⚠️ Error initializing FCM token: $e');
+      }
+
       // Navigate to role-specific dashboard
       if (mounted) {
         final theme = Provider.of<AppThemeProvider>(context, listen: false);
