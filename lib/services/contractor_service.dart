@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import '../features/contractor/data/models/contractor_model.dart';
 
 class ContractorService {
@@ -15,34 +16,53 @@ class ContractorService {
     required String assignedArea,
   }) async {
     try {
-      // Create Firebase Auth account
-      final userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      FirebaseApp? secondaryApp;
+      FirebaseAuth? secondaryAuth;
 
-      final contractorId = userCredential.user!.uid;
+      try {
+        try {
+          secondaryApp = Firebase.app('UserCreationApp');
+        } catch (e) {
+          secondaryApp = await Firebase.initializeApp(
+            name: 'UserCreationApp',
+            options: Firebase.app().options,
+          );
+        }
 
-      // Create contractor document
-      final contractor = ContractorModel(
-        id: contractorId,
-        email: email,
-        fullName: fullName,
-        phoneNumber: phoneNumber,
-        assignedArea: assignedArea,
-        createdBy: _auth.currentUser!.uid, // Current admin
-        createdAt: DateTime.now(),
-        isActive: true,
-      );
+        secondaryAuth = FirebaseAuth.instanceFor(app: secondaryApp);
 
-      await _firestore
-          .collection('contractors')
-          .doc(contractorId)
-          .set(contractor.toFirestore());
+        UserCredential userCredential = await secondaryAuth
+            .createUserWithEmailAndPassword(email: email, password: password);
 
-      return contractorId;
+        final contractorId = userCredential.user!.uid;
+
+        // Create contractor document
+        final contractor = ContractorModel(
+          id: contractorId,
+          email: email,
+          fullName: fullName,
+          phoneNumber: phoneNumber,
+          assignedArea: assignedArea,
+          createdBy: _auth.currentUser!.uid, // Current admin
+          createdAt: DateTime.now(),
+          isActive: true,
+        );
+
+        await _firestore
+            .collection('contractors')
+            .doc(contractorId)
+            .set(contractor.toFirestore());
+        await secondaryAuth.signOut();
+        return contractorId;
+      } catch (e) {
+        rethrow;
+      } finally {
+        if (secondaryApp != null) {
+          await secondaryApp.delete();
+        }
+      }
     } catch (e) {
-      throw Exception('Failed to create contractor: $e');
+      rethrow;
     }
   }
 
