@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
 import '../../core/constants/user_roles.dart';
 import 'app_routes.dart';
 
@@ -140,6 +141,14 @@ class RouteManager {
 
   /// Logout and navigate to login
   Future<void> logout(BuildContext context) async {
+    try {
+      // Delete FCM token from current device
+      await NotificationService().deleteToken();
+      print('✅ FCM token deleted on logout');
+    } catch (e) {
+      print('⚠️ Error deleting FCM token on logout: $e');
+    }
+
     await _auth.signOut();
     Navigator.pushNamedAndRemoveUntil(
       context,

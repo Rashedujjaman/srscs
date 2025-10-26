@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
 import '../../../../services/auth_service.dart';
+import '../../../../services/notification_service.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/constants/user_roles.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -92,6 +95,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (userRole == null) {
         // User authenticated but no role found in any collection
+        try {
+          await NotificationService().deleteToken();
+        } catch (e) {
+          print('⚠️ Error deleting FCM token: $e');
+        }
         await FirebaseAuth.instance.signOut();
         _showError("Account not found. Please contact administrator.");
         setState(() => _isLoading = false);
@@ -117,6 +125,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Navigate to role-specific dashboard
       if (mounted) {
+        final theme = Provider.of<AppThemeProvider>(context, listen: false);
+        theme.setThemeForRole(userRole);
         final dashboardRoute =
             AppRoutes.getInitialRoute(userRole.toString().split('.').last);
         Get.offAllNamed(dashboardRoute);

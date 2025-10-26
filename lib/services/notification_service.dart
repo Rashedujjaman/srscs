@@ -48,6 +48,9 @@ class NotificationService {
         // Get FCM token
         await _getFCMToken();
 
+        // Clean up old tokens periodically
+        await cleanupInactiveTokens();
+
         // Initialize local notifications
         await _initializeLocalNotifications();
 
@@ -88,7 +91,7 @@ class NotificationService {
     }
   }
 
-  /// Save FCM token to Firestore
+  /// Save FCM token to Firestore (supports multiple devices)
   Future<void> _saveFCMTokenToFirestore(String token) async {
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -108,16 +111,52 @@ class NotificationService {
           collection = 'citizens';
         }
 
+        // Get current document to retrieve existing tokens
+        final userDoc =
+            await _firestore.collection(collection).doc(userId).get();
+        final data = userDoc.data();
+
+        // Get existing FCM tokens array
+        List<dynamic> existingTokens = data?['fcmTokens'] ?? [];
+
+        // Create device-specific token entry with Timestamp instead of FieldValue
+        final now = Timestamp.now();
+        final deviceToken = {
+          'token': token,
+          'platform': GetPlatform.isAndroid ? 'android' : 'ios',
+          'lastActive': now,
+          'addedAt': now,
+        };
+
+        // Check if this token already exists
+        final tokenExists =
+            existingTokens.any((t) => t is Map && t['token'] == token);
+
+        if (!tokenExists) {
+          // Add new token to the array
+          existingTokens.add(deviceToken);
+        } else {
+          // Update existing token's lastActive timestamp
+          existingTokens = existingTokens.map((t) {
+            if (t is Map && t['token'] == token) {
+              return {
+                ...Map<String, dynamic>.from(t),
+                'lastActive': now,
+              };
+            }
+            return t;
+          }).toList();
+        }
+
+        // Save to Firestore with array of tokens
         await _firestore.collection(collection).doc(userId).set({
-          'fcmToken': token,
-          'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
-          'deviceInfo': {
-            'platform': GetPlatform.isAndroid ? 'android' : 'ios',
-            'lastActive': FieldValue.serverTimestamp(),
-          }
+          'fcmTokens': existingTokens,
+          // 'fcmToken': token, // Keep for backward compatibility
+          'fcmTokenUpdatedAt': DateTime.now(),
         }, SetOptions(merge: true));
 
-        print('✅ FCM token saved to $collection for user: $userId');
+        print(
+            '✅ FCM token saved to $collection for user: $userId (Total devices: ${existingTokens.length})');
       }
     } catch (e) {
       print('❌ Error saving FCM token: $e');
@@ -329,14 +368,101 @@ class NotificationService {
     }
   }
 
-  /// Delete FCM token (for logout)
+  /// Delete FCM token for current device (for logout)
   Future<void> deleteToken() async {
     try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (userId != null && _fcmToken != null) {
+        final userRole = await AuthService().getUserRole(userId);
+
+        String collection;
+        if (userRole == UserRole.citizen) {
+          collection = 'citizens';
+        } else if (userRole == UserRole.contractor) {
+          collection = 'contractors';
+        } else if (userRole == UserRole.admin) {
+          collection = 'admins';
+        } else {
+          collection = 'citizens';
+        }
+
+        // Get current document
+        final userDoc =
+            await _firestore.collection(collection).doc(userId).get();
+        final data = userDoc.data();
+
+        // Remove this device's token from the array
+        List<dynamic> existingTokens = data?['fcmTokens'] ?? [];
+        existingTokens.removeWhere((t) => t is Map && t['token'] == _fcmToken);
+
+        // Update Firestore
+        await _firestore.collection(collection).doc(userId).update({
+          'fcmTokens': existingTokens,
+        });
+
+        print(
+            '✅ FCM token removed for this device. Remaining devices: ${existingTokens.length}');
+      }
+
+      // Delete the token from Firebase
       await _messaging.deleteToken();
       _fcmToken = null;
-      print('✅ FCM token deleted');
+      print('✅ FCM token deleted from Firebase');
     } catch (e) {
       print('❌ Error deleting FCM token: $e');
+    }
+  }
+
+  /// Clean up old/inactive device tokens (call periodically)
+  /// Removes tokens that haven't been active for more than 30 days
+  Future<void> cleanupInactiveTokens() async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (userId != null) {
+        final userRole = await AuthService().getUserRole(userId);
+
+        String collection;
+        if (userRole == UserRole.citizen) {
+          collection = 'citizens';
+        } else if (userRole == UserRole.contractor) {
+          collection = 'contractors';
+        } else if (userRole == UserRole.admin) {
+          collection = 'admins';
+        } else {
+          collection = 'citizens';
+        }
+
+        // Get current document
+        final userDoc =
+            await _firestore.collection(collection).doc(userId).get();
+        final data = userDoc.data();
+
+        List<dynamic> existingTokens = data?['fcmTokens'] ?? [];
+        final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
+
+        // Filter out tokens older than 30 days
+        final activeTokens = existingTokens.where((t) {
+          if (t is Map && t['lastActive'] != null) {
+            final lastActive = (t['lastActive'] as Timestamp).toDate();
+            return lastActive.isAfter(thirtyDaysAgo);
+          }
+          return false;
+        }).toList();
+
+        // Update if any tokens were removed
+        if (activeTokens.length < existingTokens.length) {
+          await _firestore.collection(collection).doc(userId).update({
+            'fcmTokens': activeTokens,
+          });
+
+          print(
+              '✅ Cleaned up ${existingTokens.length - activeTokens.length} inactive tokens');
+        }
+      }
+    } catch (e) {
+      print('❌ Error cleaning up inactive tokens: $e');
     }
   }
 

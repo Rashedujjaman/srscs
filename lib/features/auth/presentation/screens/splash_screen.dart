@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:srscs/core/theme/app_theme_provider.dart';
 import '../../../../services/auth_service.dart';
+import '../../../../services/notification_service.dart';
 import '../../../../core/routes/app_routes.dart';
 import 'package:provider/provider.dart';
 
@@ -46,6 +47,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (userRole == null) {
         // User authenticated but no role found
+        try {
+          await NotificationService().deleteToken();
+        } catch (e) {
+          print('⚠️ Error deleting FCM token: $e');
+        }
         await FirebaseAuth.instance.signOut();
         Get.offAllNamed(AppRoutes.login);
         return;

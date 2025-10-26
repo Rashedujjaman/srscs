@@ -10,7 +10,7 @@ admin.initializeApp();
 /**
  * Send push notification when complaint status changes
  * Triggers: When a complaint document is updated
- * Sends to: Individual user who submitted the complaint
+ * Sends to: ALL DEVICES of the user who submitted the complaint (UPDATED FOR MULTI-DEVICE)
  */
 exports.onComplaintStatusChange = functions.firestore
   .document("complaints/{complaintId}")
@@ -34,20 +34,31 @@ exports.onComplaintStatusChange = functions.firestore
     );
 
     try {
-      // Get user document to check preferences and FCM token
-      const userDoc = await admin
-        .firestore()
-        .collection("citizens")
-        .doc(userId)
-        .get();
+      // Try to find user in all collections (citizens, contractors, admins)
+      let userDoc = null;
+      let userRef = null;
 
-      if (!userDoc.exists) {
-        console.log(`User ${userId} not found`);
+      const collections = ["citizens", "contractors", "admins"];
+      for (const collection of collections) {
+        const doc = await admin
+          .firestore()
+          .collection(collection)
+          .doc(userId)
+          .get();
+        if (doc.exists) {
+          userDoc = doc;
+          userRef = doc.ref;
+          console.log(`User found in ${collection} collection`);
+          break;
+        }
+      }
+
+      if (!userDoc || !userDoc.exists) {
+        console.log(`User ${userId} not found in any collection`);
         return null;
       }
 
       const userData = userDoc.data();
-      const fcmToken = userData.fcmToken;
       const preferences = userData.notificationPreferences || {};
 
       // Check if user has enabled complaint update notifications
@@ -58,10 +69,16 @@ exports.onComplaintStatusChange = functions.firestore
         return null;
       }
 
-      if (!fcmToken) {
-        console.log(`No FCM token found for user ${userId}`);
+      // Get all FCM tokens from the fcmTokens array (MULTI-DEVICE SUPPORT)
+      const fcmTokens = userData.fcmTokens || [];
+      const tokens = fcmTokens.filter((t) => t && t.token).map((t) => t.token);
+
+      if (tokens.length === 0) {
+        console.log(`No FCM tokens found for user ${userId}`);
         return null;
       }
+
+      console.log(`Found ${tokens.length} device(s) for user ${userId}`);
 
       // Prepare notification content based on status
       let title, body, priority;
@@ -93,7 +110,7 @@ exports.onComplaintStatusChange = functions.firestore
           priority = "normal";
       }
 
-      // Send notification
+      // Send notification to ALL devices
       const message = {
         notification: {
           title: title,
@@ -121,14 +138,36 @@ exports.onComplaintStatusChange = functions.firestore
             },
           },
         },
-        token: fcmToken,
       };
 
-      const response = await admin.messaging().send(message);
+      const response = await admin.messaging().sendEachForMulticast({
+        tokens: tokens,
+        ...message,
+      });
+
       console.log(
-        `✅ Notification sent successfully to user ${userId}:`,
-        response
+        `✅ Notification sent to ${response.successCount} device(s), ` +
+          `failed: ${response.failureCount}`
       );
+
+      // Clean up invalid tokens
+      if (response.failureCount > 0) {
+        const invalidTokenIndices = [];
+        response.responses.forEach((resp, idx) => {
+          if (!resp.success) {
+            console.log(`Failed to send to device ${idx}:`, resp.error);
+            invalidTokenIndices.push(idx);
+          }
+        });
+
+        if (invalidTokenIndices.length > 0) {
+          const validTokens = fcmTokens.filter(
+            (_, idx) => !invalidTokenIndices.includes(idx)
+          );
+          await userRef.update({ fcmTokens: validTokens });
+          console.log(`Removed ${invalidTokenIndices.length} invalid token(s)`);
+        }
+      }
 
       return response;
     } catch (error) {
