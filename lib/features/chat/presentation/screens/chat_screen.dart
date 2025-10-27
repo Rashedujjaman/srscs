@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,7 +21,7 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final _messageCtrl = TextEditingController();
   final _scrollController = ScrollController();
   final _imagePicker = ImagePicker();
@@ -28,10 +29,13 @@ class _ChatScreenState extends State<ChatScreen> {
   String? _cachedUserName;
   String? _collectionName;
   Color _primaryColor = const Color(0xFF9F7AEA);
+  DatabaseReference? _chatStatusRef;
+  UserRole? _userRole;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final theme = Provider.of<AppThemeProvider>(context, listen: false);
     _primaryColor = theme.primaryColor;
     _fetchUserRole();
@@ -39,9 +43,45 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _setChatViewingStatus(false);
     _messageCtrl.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _setChatViewingStatus(true);
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        _setChatViewingStatus(false);
+        break;
+      case AppLifecycleState.hidden:
+        break;
+    }
+  }
+
+  Future<void> _setChatViewingStatus(bool isViewing) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || _chatStatusRef == null) return;
+
+    try {
+      await _chatStatusRef!.set({
+        'isViewing': isViewing,
+        'lastSeen': ServerValue.timestamp,
+      });
+      print(
+          '📱 Chat viewing status set: $isViewing (${_userRole?.toString()})');
+    } catch (e) {
+      print('❌ Error setting chat viewing status: $e');
+    }
   }
 
   /// Fetch user's full name from Firestore (cached)
@@ -82,20 +122,32 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() {
           _collectionName = 'citizens';
           _primaryColor = UserRoleExtension(UserRole.citizen).color;
+          _userRole = UserRole.citizen;
+          _chatStatusRef =
+              FirebaseDatabase.instance.ref('chats/${user.uid}/chatStatus');
         });
         break;
       case UserRole.contractor:
         setState(() {
           _collectionName = 'contractors';
           _primaryColor = UserRoleExtension(UserRole.contractor).color;
+          _userRole = UserRole.contractor;
+          _chatStatusRef = FirebaseDatabase.instance
+              .ref('contractor_chats/${user.uid}/chatStatus');
         });
         break;
       default:
         setState(() {
           _collectionName = 'users';
           _primaryColor = Colors.grey;
+          _userRole = null;
+          _chatStatusRef =
+              FirebaseDatabase.instance.ref('chats/${user.uid}/chatStatus');
         });
     }
+
+    // Set viewing status to true after initializing the reference
+    _setChatViewingStatus(true);
   }
 
   void _scrollToBottom() {

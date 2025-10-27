@@ -586,6 +586,20 @@ exports.onChatMessage = functions.database
 
         console.log(`✅ Found user in ${userType} collection`);
 
+        // Check if user is currently viewing the chat (to prevent notification spam)
+        const chatStatusRef = admin
+          .database()
+          .ref(`chats/${userId}/chatStatus`);
+        const chatStatusSnapshot = await chatStatusRef.once("value");
+        const chatStatus = chatStatusSnapshot.val();
+
+        if (chatStatus && chatStatus.isViewing === true) {
+          console.log(
+            `⚠️ User ${userId} is currently viewing chat, skipping notification`
+          );
+          return null;
+        }
+
         const preferences = userData.notificationPreferences || {};
 
         // Check if user has enabled chat message notifications
@@ -688,6 +702,20 @@ exports.onChatMessage = functions.database
 
         console.log(`📝 Message from ${userType}: ${userName}`);
 
+        // Check if any admin is currently viewing this chat
+        const adminChatStatusRef = admin
+          .database()
+          .ref(`admin_chat_status/${userId}`);
+        const adminChatStatusSnapshot = await adminChatStatusRef.once("value");
+        const adminChatStatus = adminChatStatusSnapshot.val();
+
+        if (adminChatStatus && adminChatStatus.isViewing === true) {
+          console.log(
+            `⚠️ Admin is currently viewing chat with ${userId}, skipping notification`
+          );
+          return null;
+        }
+
         // Get all admin users
         const adminsSnapshot = await admin
           .firestore()
@@ -781,9 +809,13 @@ exports.onChatMessage = functions.database
 // ============================================================================
 
 /**
- * Send push notification for contractor chat messages
- * Triggers: When a contractor sends a chat message
- * Sends to: Admin users
+ * Send push notification for contractor chat messages (bidirectional)
+ * Handles both directions:
+ * 1. Admin → Contractor: Notify the contractor
+ * 2. Contractor → Admin: Notify all admins
+ *
+ * Triggers: When a message is added to contractor chat
+ * Sends to: Either the contractor (if from admin) OR all admins (if from contractor)
  */
 exports.onContractorChatMessage = functions.database
   .ref("contractor_chats/{contractorId}/messages/{messageId}")
@@ -791,93 +823,230 @@ exports.onContractorChatMessage = functions.database
     const messageData = snapshot.val();
     const contractorId = context.params.contractorId;
     const messageId = context.params.messageId;
-    console.log(`New chat message from contractor ${contractorId}:`, messageId);
-    // Only send notification if message is from contractor (NOT admin)
 
-    if (messageData.isAdmin) {
-      console.log(
-        "Message is from admin, not contractor. Skipping notification"
-      );
-      return null;
-    }
+    console.log(
+      `📬 New contractor chat message for ${contractorId}:`,
+      messageId
+    );
+
     try {
-      // Get contractor name
-      const contractorDoc = await admin
-        .firestore()
-        .collection("contractors")
-        .doc(contractorId)
-        .get();
-      const contractorName = contractorDoc.exists
-        ? contractorDoc.data().name || "A contractor"
-        : "A contractor";
-      // Get all admin users
-      const adminsSnapshot = await admin.firestore().collection("admins").get();
-      if (adminsSnapshot.empty) {
-        console.log("No admin users found");
-        return null;
-      }
-      // Collect all admin tokens
-      const adminTokens = [];
-      adminsSnapshot.docs.forEach((doc) => {
-        const adminData = doc.data();
-        const preferences = adminData.notificationPreferences || {};
-        // Check if admin has enabled chat notifications (default: true)
-        if (preferences.chatMessages !== false) {
-          const fcmTokens = adminData.fcmTokens || [];
-          fcmTokens.forEach((tokenObj) => {
-            if (tokenObj && tokenObj.token) {
-              adminTokens.push(tokenObj.token);
-            }
-          });
+      // ========================================================================
+      // SCENARIO 1: Admin sent message → Notify Contractor
+      // ========================================================================
+      if (messageData.isAdmin === true) {
+        console.log("→ Admin sent message, notifying contractor");
+
+        // Check if contractor is currently viewing the chat
+        const chatStatusRef = admin
+          .database()
+          .ref(`contractor_chats/${contractorId}/chatStatus`);
+        const chatStatusSnapshot = await chatStatusRef.once("value");
+        const chatStatus = chatStatusSnapshot.val();
+
+        if (chatStatus && chatStatus.isViewing === true) {
+          console.log(
+            `⚠️ Contractor ${contractorId} is currently viewing chat, skipping notification`
+          );
+          return null;
         }
-      });
-      if (adminTokens.length === 0) {
-        console.log("No admin FCM tokens found");
-        return null;
-      }
-      console.log(
-        `Sending notification to ${adminTokens.length} admin device(s)`
-      );
-      // Prepare notification
-      const message = {
-        notification: {
-          title: `💬 New Message from ${contractorName}`,
-          body:
-            messageData.message.length > 100
-              ? messageData.message.substring(0, 97) + "..."
-              : messageData.message,
-        },
-        data: {
-          type: "contractor_chat_message",
-          contractorId: contractorId,
-          messageId: messageId,
-          click_action: "FLUTTER_NOTIFICATION_CLICK",
-        },
-        android: {
-          priority: "high",
+
+        // Get contractor document
+        const contractorDoc = await admin
+          .firestore()
+          .collection("contractors")
+          .doc(contractorId)
+          .get();
+
+        if (!contractorDoc.exists) {
+          console.log(`❌ Contractor ${contractorId} not found`);
+          return null;
+        }
+
+        const contractorData = contractorDoc.data();
+        const preferences = contractorData.notificationPreferences || {};
+
+        // Check if contractor has enabled chat message notifications
+        if (preferences.chatMessages === false) {
+          console.log(
+            `⚠️ Contractor ${contractorId} has disabled chat message notifications`
+          );
+          return null;
+        }
+
+        // Get all FCM tokens (multi-device support)
+        const fcmTokens = contractorData.fcmTokens || [];
+        const tokens = fcmTokens
+          .filter((t) => t && t.token)
+          .map((t) => t.token);
+
+        if (tokens.length === 0) {
+          console.log(`❌ No FCM tokens found for contractor ${contractorId}`);
+          return null;
+        }
+
+        console.log(
+          `📱 Found ${tokens.length} device(s) for contractor ${contractorId}`
+        );
+
+        // Prepare notification
+        const message = {
           notification: {
-            channelId: "srscs_high_importance",
-            sound: "default",
+            title: "💬 New Message from Admin",
+            body:
+              messageData.message.length > 100
+                ? messageData.message.substring(0, 97) + "..."
+                : messageData.message,
           },
-        },
-        apns: {
-          payload: {
-            aps: {
+          data: {
+            type: "admin_contractor_chat_message",
+            contractorId: contractorId,
+            messageId: messageId,
+            click_action: "FLUTTER_NOTIFICATION_CLICK",
+          },
+          android: {
+            priority: "high",
+            notification: {
+              channelId: "srscs_high_importance",
               sound: "default",
-              badge: 1,
             },
           },
-        },
-      };
-      const response = await admin.messaging().sendEachForMulticast({
-        tokens: adminTokens,
-        ...message,
-      });
-      console.log(
-        `✅ Contractor chat notification sent to ${response.successCount} admin device(s), ` +
-          `failed: ${response.failureCount}`
-      );
-      return response;
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+                badge: 1,
+              },
+            },
+          },
+        };
+
+        const response = await admin.messaging().sendEachForMulticast({
+          tokens: tokens,
+          ...message,
+        });
+
+        console.log(
+          `✅ Admin message notification sent to contractor: ${response.successCount} device(s), ` +
+            `failed: ${response.failureCount}`
+        );
+
+        return response;
+      }
+
+      // ========================================================================
+      // SCENARIO 2: Contractor sent message → Notify All Admins
+      // ========================================================================
+      else {
+        console.log("→ Contractor sent message, notifying all admins");
+
+        // Check if any admin is currently viewing this contractor chat
+        const adminChatStatusRef = admin
+          .database()
+          .ref(`admin_chat_status/${contractorId}`);
+        const adminChatStatusSnapshot = await adminChatStatusRef.once("value");
+        const adminChatStatus = adminChatStatusSnapshot.val();
+
+        if (adminChatStatus && adminChatStatus.isViewing === true) {
+          console.log(
+            `⚠️ Admin is currently viewing chat with contractor ${contractorId}, skipping notification`
+          );
+          return null;
+        }
+
+        // Get contractor name
+        const contractorDoc = await admin
+          .firestore()
+          .collection("contractors")
+          .doc(contractorId)
+          .get();
+
+        const contractorName = contractorDoc.exists
+          ? contractorDoc.data().name || "A contractor"
+          : "A contractor";
+
+        console.log(`📝 Message from contractor: ${contractorName}`);
+
+        // Get all admin users
+        const adminsSnapshot = await admin
+          .firestore()
+          .collection("admins")
+          .get();
+
+        if (adminsSnapshot.empty) {
+          console.log("❌ No admin users found");
+          return null;
+        }
+
+        // Collect all admin tokens
+        const adminTokens = [];
+        adminsSnapshot.docs.forEach((doc) => {
+          const adminData = doc.data();
+          const preferences = adminData.notificationPreferences || {};
+
+          // Check if admin has enabled chat notifications (default: true)
+          if (preferences.chatMessages !== false) {
+            const fcmTokens = adminData.fcmTokens || [];
+            fcmTokens.forEach((tokenObj) => {
+              if (tokenObj && tokenObj.token) {
+                adminTokens.push(tokenObj.token);
+              }
+            });
+          }
+        });
+
+        if (adminTokens.length === 0) {
+          console.log("❌ No admin FCM tokens found");
+          return null;
+        }
+
+        console.log(
+          `📱 Sending notification to ${adminTokens.length} admin device(s)`
+        );
+
+        // Prepare notification
+        const message = {
+          notification: {
+            title: `💬 New Message from ${contractorName}`,
+            body:
+              messageData.message.length > 100
+                ? messageData.message.substring(0, 97) + "..."
+                : messageData.message,
+          },
+          data: {
+            type: "contractor_chat_message",
+            contractorId: contractorId,
+            messageId: messageId,
+            click_action: "FLUTTER_NOTIFICATION_CLICK",
+          },
+          android: {
+            priority: "high",
+            notification: {
+              channelId: "srscs_high_importance",
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+                badge: 1,
+              },
+            },
+          },
+        };
+
+        const response = await admin.messaging().sendEachForMulticast({
+          tokens: adminTokens,
+          ...message,
+        });
+
+        console.log(
+          `✅ Contractor chat notification sent to ${response.successCount} admin device(s), ` +
+            `failed: ${response.failureCount}`
+        );
+
+        return response;
+      }
     } catch (error) {
       console.error("❌ Error sending contractor chat notification:", error);
       return null;

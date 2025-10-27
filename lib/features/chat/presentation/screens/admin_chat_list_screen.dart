@@ -159,6 +159,7 @@ class AdminChatListScreen extends StatelessWidget {
               builder: (context) => AdminChatDetailScreen(
                 userId: session.userId,
                 userName: session.userName,
+                userType: 'admin',
               ),
             ),
           );

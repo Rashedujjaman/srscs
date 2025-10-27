@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,36 +14,78 @@ import '../../data/datasources/chat_remote_data_source.dart';
 class AdminChatDetailScreen extends StatefulWidget {
   final String userId;
   final String userName;
+  final String userType;
 
   const AdminChatDetailScreen({
     super.key,
     required this.userId,
     required this.userName,
+    required this.userType,
   });
 
   @override
   State<AdminChatDetailScreen> createState() => _AdminChatDetailScreenState();
 }
 
-class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
+class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
+    with WidgetsBindingObserver {
   final _messageCtrl = TextEditingController();
   final _scrollController = ScrollController();
   final _imagePicker = ImagePicker();
   final _dataSource = ChatRemoteDataSource();
   bool _isUploading = false;
-  bool _isTyping = false;
+  late DatabaseReference _adminChatStatusRef;
+  late String _adminId;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _adminId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    _adminChatStatusRef =
+        FirebaseDatabase.instance.ref('admin_chat_status/${widget.userId}');
     _markMessagesAsRead();
+    _setAdminViewingStatus(true);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _setAdminViewingStatus(false);
     _messageCtrl.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _setAdminViewingStatus(true);
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        _setAdminViewingStatus(false);
+        break;
+      case AppLifecycleState.hidden:
+        break;
+    }
+  }
+
+  Future<void> _setAdminViewingStatus(bool isViewing) async {
+    try {
+      await _adminChatStatusRef.set({
+        'isViewing': isViewing,
+        'lastSeen': ServerValue.timestamp,
+        'adminId': _adminId,
+      });
+      print('📱 Admin viewing status set for ${widget.userId}: $isViewing');
+    } catch (e) {
+      print('❌ Error setting admin viewing status: $e');
+    }
   }
 
   Future<void> _markMessagesAsRead() async {
@@ -78,7 +121,6 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
       );
 
       _messageCtrl.clear();
-      setState(() => _isTyping = false);
       Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
     } catch (e) {
       _showError('Failed to send message: $e');
@@ -385,9 +427,6 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
                     maxLines: null,
                     textCapitalization: TextCapitalization.sentences,
                     enabled: !_isUploading,
-                    onChanged: (value) {
-                      setState(() => _isTyping = value.isNotEmpty);
-                    },
                   ),
                 ),
                 const SizedBox(width: 8),
