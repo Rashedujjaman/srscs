@@ -1,30 +1,22 @@
 /// Contractor model - Data layer
 ///
 /// Firestore serialization for ContractorEntity
+library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/contractor_entity.dart';
 
 class ContractorModel extends ContractorEntity {
   ContractorModel({
-    required String id,
-    required String email,
-    required String fullName,
-    required String phoneNumber,
-    required String assignedArea,
-    required String createdBy,
-    required DateTime createdAt,
-    bool isActive = true,
-  }) : super(
-          id: id,
-          email: email,
-          fullName: fullName,
-          phoneNumber: phoneNumber,
-          assignedArea: assignedArea,
-          createdBy: createdBy,
-          createdAt: createdAt,
-          isActive: isActive,
-        );
+    required super.id,
+    required super.email,
+    required super.fullName,
+    required super.phoneNumber,
+    required super.assignedArea,
+    required super.createdBy,
+    required super.createdAt,
+    super.isActive,
+  });
 
   /// Create from Firestore document
   factory ContractorModel.fromFirestore(DocumentSnapshot doc) {

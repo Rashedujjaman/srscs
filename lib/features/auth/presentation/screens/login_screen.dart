@@ -125,8 +125,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Initialize FCM token after successful login
       try {
-        await NotificationService().initialize();
-        print('✅ FCM token registered after login');
+        final notificationService = NotificationService();
+        await notificationService.initialize();
+
+        // Subscribe to common topics (all users)
+        await notificationService.subscribeToTopic('all_users');
+        await notificationService.subscribeToTopic('urgent_notices');
+
+        // Subscribe to role-specific topics
+        switch (userRole) {
+          case UserRole.citizen:
+            await notificationService.subscribeToTopic('citizen_updates');
+            print('✅ Subscribed to citizen_updates topic');
+            break;
+          case UserRole.contractor:
+            await notificationService.subscribeToTopic('contractor_updates');
+            print('✅ Subscribed to contractor_updates topic');
+            break;
+          case UserRole.admin:
+            await notificationService.subscribeToTopic('admin_updates');
+            print('✅ Subscribed to admin_updates topic');
+            break;
+        }
+
+        print('✅ FCM token registered and topics subscribed after login');
       } catch (e) {
         print('⚠️ Error initializing FCM token: $e');
       }

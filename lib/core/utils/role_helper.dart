@@ -2,6 +2,7 @@
 ///
 /// This file provides utility functions for role-based access control,
 /// route determination, and permission checking.
+library;
 
 import 'package:flutter/material.dart';
 import '../constants/user_roles.dart';

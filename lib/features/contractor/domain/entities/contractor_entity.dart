@@ -1,6 +1,7 @@
 /// Contractor entity - Domain layer
 ///
 /// Represents a contractor user who can be assigned complaints by admins
+library;
 
 class ContractorEntity {
   final String id; // Firebase Auth UID

@@ -2,6 +2,7 @@
 ///
 /// This file defines the user roles used throughout the application
 /// for implementing role-based authentication and authorization.
+library;
 
 import 'package:flutter/material.dart';
 

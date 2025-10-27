@@ -3,24 +3,15 @@ import '../../domain/entities/chat_message_entity.dart';
 
 class ChatMessageModel extends ChatMessageEntity {
   ChatMessageModel({
-    required String id,
-    required String senderId,
-    required String senderName,
-    required String message,
-    MessageType type = MessageType.text,
-    String? mediaUrl,
-    required DateTime timestamp,
-    bool isAdmin = false,
-  }) : super(
-          id: id,
-          senderId: senderId,
-          senderName: senderName,
-          message: message,
-          type: type,
-          mediaUrl: mediaUrl,
-          timestamp: timestamp,
-          isAdmin: isAdmin,
-        );
+    required super.id,
+    required super.senderId,
+    required super.senderName,
+    required super.message,
+    super.type,
+    super.mediaUrl,
+    required super.timestamp,
+    super.isAdmin,
+  });
 
   factory ChatMessageModel.fromSnapshot(DataSnapshot snapshot) {
     final data = snapshot.value as Map<dynamic, dynamic>;

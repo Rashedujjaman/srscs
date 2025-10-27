@@ -93,9 +93,6 @@ import 'core/theme/app_theme_provider.dart';
 // ONE-TIME DATABASE SEEDER (uncomment to run once, then comment out again)
 // import 'features/dashboard/data/datasources/seed_dashboard_data.dart';
 
-// Notification Service
-import 'services/notification_service.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -105,14 +102,6 @@ void main() async {
   // 🔥 Configure Firebase Realtime Database
   FirebaseDatabase.instance.databaseURL =
       'https://srscs-58227-default-rtdb.asia-southeast1.firebasedatabase.app/';
-
-  // Initialize Push Notifications
-  final notificationService = NotificationService();
-  await notificationService.initialize();
-
-  // Subscribe to general topics
-  await notificationService.subscribeToTopic('all_users');
-  await notificationService.subscribeToTopic('urgent_notices');
 
   // ⚠️ ONE-TIME SEEDING - UNCOMMENT BELOW, RUN ONCE, THEN COMMENT OUT AGAIN ⚠️
   // await seedDashboardData();

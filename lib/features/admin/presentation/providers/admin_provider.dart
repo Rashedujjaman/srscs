@@ -19,7 +19,7 @@ class AdminProvider with ChangeNotifier {
   });
 
   // State
-  List<Map<String, dynamic>> _complaints = [];
+  final List<Map<String, dynamic>> _complaints = [];
   Map<String, dynamic>? _statistics;
   bool _isLoading = false;
   String? _error;

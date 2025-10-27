@@ -5,6 +5,7 @@
 /// - Role-based access control
 /// - Route guarding
 /// - Automatic redirects
+library;
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -142,11 +143,20 @@ class RouteManager {
   /// Logout and navigate to login
   Future<void> logout(BuildContext context) async {
     try {
+      final notificationService = NotificationService();
+
+      // Unsubscribe from all topics
+      await notificationService.unsubscribeFromTopic('all_users');
+      await notificationService.unsubscribeFromTopic('urgent_notices');
+      await notificationService.unsubscribeFromTopic('citizen_updates');
+      await notificationService.unsubscribeFromTopic('contractor_updates');
+      await notificationService.unsubscribeFromTopic('admin_updates');
+
       // Delete FCM token from current device
-      await NotificationService().deleteToken();
-      print('✅ FCM token deleted on logout');
+      await notificationService.deleteToken();
+      print('✅ FCM token deleted and topics unsubscribed on logout');
     } catch (e) {
-      print('⚠️ Error deleting FCM token on logout: $e');
+      print('⚠️ Error cleaning up notifications on logout: $e');
     }
 
     await _auth.signOut();
