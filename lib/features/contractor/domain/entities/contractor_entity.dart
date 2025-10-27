@@ -8,10 +8,15 @@ class ContractorEntity {
   final String email;
   final String fullName;
   final String phoneNumber;
-  final String assignedArea; // Area where contractor works
+  final String? assignedArea; // Area where contractor works
   final String createdBy; // Admin ID who created this contractor
   final DateTime createdAt;
   final bool isActive; // Can be deactivated by admin
+  final String? nid;
+  final String? address;
+  final String? imageUrl;
+  final String? dob;
+  final String? bloodGroup;
 
   ContractorEntity({
     required this.id,
@@ -22,6 +27,11 @@ class ContractorEntity {
     required this.createdBy,
     required this.createdAt,
     this.isActive = true,
+    this.nid = '',
+    this.address = '',
+    this.imageUrl = '',
+    this.dob = '',
+    this.bloodGroup = '',
   });
 
   /// Get status display text

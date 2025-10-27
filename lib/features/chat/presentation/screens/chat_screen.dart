@@ -75,8 +75,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     // Only set viewing status if chat has messages
     // This prevents creating phantom chats for users who haven't sent any messages yet
-    if (!_hasChatMessages && isViewing) {
-      print('📱 Skipping viewing status - no messages in chat yet');
+    if (!_hasChatMessages) {
+      print(
+          '📱 Skipping viewing status - no messages in chat yet (isViewing: $isViewing)');
       return;
     }
 

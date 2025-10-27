@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/constants/user_roles.dart' hide ComplaintStatus;
+import '../../../../core/constants/user_roles.dart';
 import '../../../complaint/domain/entities/complaint_entity.dart';
 import '../../../complaint/data/models/complaint_model.dart';
 import '../../../../services/assignment_service.dart';

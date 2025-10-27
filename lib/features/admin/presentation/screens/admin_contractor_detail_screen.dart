@@ -84,7 +84,7 @@ class _AdminContractorDetailScreenState
                       _buildInfoRow(
                           Icons.phone, 'Phone', contractor.phoneNumber),
                       _buildInfoRow(Icons.location_on, 'Assigned Area',
-                          contractor.assignedArea),
+                          contractor.assignedArea ?? 'N/A'),
                     ],
                   ),
 

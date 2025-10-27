@@ -16,6 +16,11 @@ class ContractorModel extends ContractorEntity {
     required super.createdBy,
     required super.createdAt,
     super.isActive,
+    super.nid,
+    super.address,
+    super.imageUrl,
+    super.dob,
+    super.bloodGroup,
   });
 
   /// Create from Firestore document
@@ -30,6 +35,11 @@ class ContractorModel extends ContractorEntity {
       createdBy: data['createdBy'] ?? '',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       isActive: data['isActive'] ?? true,
+      nid: data['nid'] ?? '',
+      address: data['address'] ?? '',
+      imageUrl: data['imageUrl'] ?? '',
+      dob: data['dob'] ?? '',
+      bloodGroup: data['bloodGroup'] ?? '',
     );
   }
 
@@ -44,6 +54,11 @@ class ContractorModel extends ContractorEntity {
       'createdAt': Timestamp.fromDate(createdAt),
       'isActive': isActive,
       'role': 'contractor', // Always contractor
+      'nid': nid,
+      'address': address,
+      'imageUrl': imageUrl,
+      'dob': dob,
+      'bloodGroup': bloodGroup,
     };
   }
 
@@ -57,6 +72,11 @@ class ContractorModel extends ContractorEntity {
     String? createdBy,
     DateTime? createdAt,
     bool? isActive,
+    String? nid,
+    String? address,
+    String? imageUrl,
+    String? dob,
+    String? bloodGroup,
   }) {
     return ContractorModel(
       id: id ?? this.id,
@@ -67,6 +87,11 @@ class ContractorModel extends ContractorEntity {
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
+      nid: nid ?? this.nid,
+      address: address ?? this.address,
+      imageUrl: imageUrl ?? this.imageUrl,
+      dob: dob ?? this.dob,
+      bloodGroup: bloodGroup ?? this.bloodGroup,
     );
   }
 }

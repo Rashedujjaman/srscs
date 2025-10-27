@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
-import '../../../../core/constants/user_roles.dart' hide ComplaintStatus;
+import '../../../../core/constants/user_roles.dart';
 import '../../../complaint/domain/entities/complaint_entity.dart';
 import '../../../complaint/data/models/complaint_model.dart';
 import '../../../contractor/data/models/contractor_model.dart';
@@ -759,7 +759,7 @@ class _AdminAssignmentScreenState extends State<AdminAssignmentScreen> {
                 Icon(Icons.location_city, size: 14, color: Colors.grey[600]),
                 const SizedBox(width: 4),
                 Text(
-                  contractor.assignedArea,
+                  contractor.assignedArea ?? 'N/A',
                   style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                 ),
                 const Spacer(),

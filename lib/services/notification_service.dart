@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:srscs/core/routes/app_routes.dart';
 import 'auth_service.dart';
 import '../core/constants/user_roles.dart';
 
@@ -294,54 +295,188 @@ class NotificationService {
     }
   }
 
-  /// Navigate based on notification type
-  void _handleNotificationNavigation(Map<String, dynamic> data) {
+  /// Navigate based on notification type and user role
+  void _handleNotificationNavigation(Map<String, dynamic> data) async {
     String? type = data['type'];
-    String? id = data['id'];
 
-    print('🧭 Navigating to: $type (ID: $id)');
+    print('🧭 Notification data: $data');
+    print('🧭 Notification type: $type');
+
+    // Get current user role to determine correct navigation
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      print('❌ No user logged in, cannot navigate');
+      return;
+    }
+
+    final userRole = await AuthService().getUserRole(userId);
+    print('👤 User role: $userRole');
 
     // Delay navigation to ensure app is ready
     Future.delayed(const Duration(milliseconds: 500), () {
       switch (type) {
+        // ================================================================
+        // COMPLAINT NOTIFICATIONS
+        // ================================================================
         case 'complaint_status':
-        case 'complaint_update':
-          Get.toNamed('/tracking');
+          // Citizen/Contractor: Navigate to tracking screen
+          if (userRole == UserRole.citizen) {
+            Get.toNamed(AppRoutes.trackComplaints);
+          } else if (userRole == UserRole.contractor) {
+            Get.toNamed(AppRoutes.contractorTasks);
+          }
           break;
 
+        case 'new_complaint':
+          // Admin only: Navigate to complaints management
+          if (userRole == UserRole.admin) {
+            Get.toNamed(AppRoutes.adminComplaintDetail,
+                arguments: data['complaintId']);
+          }
+          break;
+
+        case 'task_assigned':
+          // Contractor only: Navigate to task detail
+          if (userRole == UserRole.contractor) {
+            final complaintId = data['complaintId'];
+            if (complaintId != null) {
+              Get.toNamed('/contractor/task-detail',
+                  arguments: {'complaintId': complaintId});
+            } else {
+              Get.toNamed('/contractor/tasks');
+            }
+          }
+          break;
+
+        // ================================================================
+        // CHAT MESSAGE NOTIFICATIONS (Role-based routing)
+        // ================================================================
+        case 'admin_chat_message':
+          // Citizen/Contractor receiving message FROM admin
+          // Navigate to their respective chat screen
+          if (userRole == UserRole.citizen) {
+            Get.toNamed('/chat');
+          } else if (userRole == UserRole.contractor) {
+            Get.toNamed('/contractor/chat');
+          }
+          break;
+
+        case 'user_chat_message':
+          // Admin receiving message FROM citizen
+          // Navigate to admin chat management with userId
+          if (userRole == UserRole.admin) {
+            final senderId = data['userId'];
+            final senderType = data['userType'] ?? 'citizen';
+
+            if (senderId != null) {
+              // Navigate to specific chat detail with the user
+              Get.toNamed('/admin/chat/detail', arguments: {
+                'userId': senderId,
+                'userType': senderType,
+              });
+            } else {
+              // Navigate to chat list
+              Get.toNamed('/admin/chat');
+            }
+          }
+          break;
+
+        case 'admin_contractor_chat_message':
+          // Contractor receiving message FROM admin
+          if (userRole == UserRole.contractor) {
+            Get.toNamed('/contractor/chat');
+          }
+          break;
+
+        case 'contractor_chat_message':
+          // Admin receiving message FROM contractor
+          if (userRole == UserRole.admin) {
+            final contractorId = data['contractorId'];
+
+            if (contractorId != null) {
+              // Navigate to specific contractor chat
+              Get.toNamed('/admin/chat/detail', arguments: {
+                'userId': contractorId,
+                'userType': 'contractor',
+              });
+            } else {
+              // Navigate to chat list
+              Get.toNamed('/admin/chat');
+            }
+          }
+          break;
+
+        // Legacy chat types (for backward compatibility)
+        case 'chat_message':
+        case 'admin_reply':
+          if (userRole == UserRole.citizen) {
+            Get.toNamed('/chat');
+          } else if (userRole == UserRole.contractor) {
+            Get.toNamed('/contractor/chat');
+          } else if (userRole == UserRole.admin) {
+            Get.toNamed('/admin/chat');
+          }
+          break;
+
+        // ================================================================
+        // NOTICE & NEWS NOTIFICATIONS
+        // ================================================================
         case 'urgent_notice':
         case 'notice':
         case 'emergency':
-          Get.toNamed('/dashboard');
-          break;
-
-        case 'chat_message':
-        case 'admin_reply':
-          Get.toNamed('/chat');
+          // Navigate to respective dashboard based on role
+          if (userRole == UserRole.citizen) {
+            Get.toNamed('/dashboard');
+          } else if (userRole == UserRole.contractor) {
+            Get.toNamed('/contractor/dashboard');
+          } else if (userRole == UserRole.admin) {
+            Get.toNamed('/admin/dashboard');
+          }
           break;
 
         case 'news':
-          Get.toNamed('/dashboard');
+          // Navigate to respective dashboard
+          if (userRole == UserRole.citizen) {
+            Get.toNamed('/dashboard');
+          } else if (userRole == UserRole.contractor) {
+            Get.toNamed('/contractor/dashboard');
+          } else if (userRole == UserRole.admin) {
+            Get.toNamed('/admin/dashboard');
+          }
           break;
 
+        // ================================================================
+        // DEFAULT FALLBACK
+        // ================================================================
         default:
-          Get.toNamed('/dashboard');
+          print('⚠️ Unknown notification type: $type');
+          // Navigate to role-specific dashboard
+          if (userRole == UserRole.citizen) {
+            Get.toNamed('/dashboard');
+          } else if (userRole == UserRole.contractor) {
+            Get.toNamed('/contractor/dashboard');
+          } else if (userRole == UserRole.admin) {
+            Get.toNamed('/admin/dashboard');
+          }
       }
     });
   }
 
-  /// Encode data to string payload
+  /// Encode data to string payload (supports all notification data fields)
   String _encodePayload(Map<String, dynamic> data) {
-    return data.entries.map((e) => '${e.key}=${e.value}').join('&');
+    return data.entries
+        .where((e) => e.value != null) // Filter out null values
+        .map((e) => '${e.key}=${Uri.encodeComponent(e.value.toString())}')
+        .join('&');
   }
 
-  /// Decode string payload to data map
+  /// Decode string payload to data map (supports all notification data fields)
   Map<String, dynamic> _decodePayload(String payload) {
     Map<String, dynamic> data = {};
     for (String pair in payload.split('&')) {
       List<String> parts = pair.split('=');
       if (parts.length == 2) {
-        data[parts[0]] = parts[1];
+        data[parts[0]] = Uri.decodeComponent(parts[1]);
       }
     }
     return data;

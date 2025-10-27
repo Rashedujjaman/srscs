@@ -6,9 +6,12 @@ import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:srscs/core/constants/user_roles.dart';
 import 'package:srscs/core/routes/app_routes.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
 import 'package:srscs/features/complaint/data/models/complaint_model.dart';
 import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
+import 'package:srscs/services/auth_service.dart';
 import '../../../../services/notification_service.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../providers/profile_provider.dart';
@@ -40,16 +43,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
-        final query = await _firestore
-            .collection('complaints')
-            .where('userId', isEqualTo: uid)
-            .orderBy('createdAt', descending: true)
-            .limit(5)
-            .get();
+        final userRole = await AuthService().getUserRole(uid);
+        final Query query;
+        if (userRole == UserRole.citizen) {
+          query = _firestore
+              .collection('complaints')
+              .where('userId', isEqualTo: uid)
+              .orderBy('createdAt', descending: true)
+              .limit(5);
+        } else if (userRole == UserRole.contractor) {
+          query = _firestore
+              .collection('complaints')
+              .where('assignedTo', isEqualTo: uid)
+              .orderBy('createdAt', descending: true)
+              .limit(5);
+        } else {
+          query = _firestore
+              .collection('complaints')
+              .orderBy('createdAt', descending: true)
+              .limit(5);
+        }
+
+        final querySnapshot = await query.get();
 
         if (mounted) {
           setState(() {
-            _recentComplaints = query.docs
+            _recentComplaints = querySnapshot.docs
                 .map((doc) => ComplaintModel.fromFirestore(doc))
                 .toList();
           });
@@ -104,22 +123,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildAppBar(
       BuildContext context, ProfileEntity profile, ProfileProvider provider) {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     return SliverAppBar(
       expandedHeight: 280,
       pinned: true,
-      backgroundColor: const Color(0xFF9F7AEA),
+      backgroundColor: theme.primaryColor,
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
           children: [
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF9F7AEA),
-                    Color(0xFF7C3AED),
+                    theme.primaryColor,
+                    theme.primaryColor.withValues(alpha: 0.5),
                   ],
                 ),
               ),
@@ -150,9 +170,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ? CachedNetworkImageProvider(
                                   profile.profilePhotoUrl!)
                               : null,
-                          child: profile.profilePhotoUrl == null
-                              ? const Icon(Icons.person,
-                                  size: 60, color: Color(0xFF9F7AEA))
+                          child: profile.profilePhotoUrl == null ||
+                                  profile.profilePhotoUrl!.isEmpty
+                              ? Icon(Icons.person,
+                                  size: 60, color: theme.primaryColor)
                               : null,
                         ),
                       ),
@@ -173,8 +194,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ],
                             ),
-                            child: const Icon(Icons.camera_alt,
-                                color: Color(0xFF9F7AEA), size: 20),
+                            child: Icon(Icons.camera_alt,
+                                color: theme.primaryColor, size: 20),
                           ),
                         ),
                       ),
@@ -306,6 +327,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildPersonalInfo(ProfileEntity profile) {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
@@ -323,27 +345,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Personal Information',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF9F7AEA),
+              color: theme.primaryColor,
             ),
           ),
           const SizedBox(height: 16),
-          _buildInfoTile(Icons.badge, 'NID Number', profile.nid),
-          _buildInfoTile(Icons.phone, 'Phone', profile.phoneNumber),
-          _buildInfoTile(Icons.location_on, 'Address', profile.address),
-          _buildInfoTile(Icons.cake, 'Date of Birth', profile.dob),
-          _buildInfoTile(Icons.bloodtype, 'Blood Group',
-              profile.bloodGroup ?? 'Not specified'),
+          if (profile.nid != '')
+            _buildInfoTile(Icons.badge, 'NID Number', profile.nid),
+          if (profile.phoneNumber != '')
+            _buildInfoTile(Icons.phone, 'Phone', profile.phoneNumber),
+          if (profile.address != '')
+            _buildInfoTile(Icons.location_on, 'Address', profile.address),
+          if (profile.dob != '')
+            _buildInfoTile(Icons.cake, 'Date of Birth', profile.dob),
+          if (profile.bloodGroup != null)
+            _buildInfoTile(Icons.bloodtype, 'Blood Group', profile.bloodGroup),
         ],
       ),
     );
   }
 
   Widget _buildInfoTile(IconData icon, String label, String? value) {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -351,10 +378,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF9F7AEA).withOpacity(0.1),
+              color: theme.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, size: 20, color: const Color(0xFF9F7AEA)),
+            child: Icon(icon, size: 20, color: theme.primaryColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -385,6 +412,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildQuickActions() {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
@@ -402,12 +430,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Quick Actions',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF9F7AEA),
+              color: theme.primaryColor,
             ),
           ),
           const SizedBox(height: 16),
@@ -509,6 +537,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildRecentComplaints() {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     if (_recentComplaints.isEmpty) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -561,18 +590,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Recent Complaints',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF9F7AEA),
+                  color: theme.primaryColor,
                 ),
               ),
               TextButton(
                 onPressed: () {
                   Get.toNamed(AppRoutes.trackComplaints);
                 },
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.primaryColor,
+                ),
                 child: const Text('View All'),
               ),
             ],
@@ -592,12 +624,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF9F7AEA).withOpacity(0.1),
+                      color: theme.primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       _getComplaintIcon(complaint.type),
-                      color: const Color(0xFF9F7AEA),
+                      color: theme.primaryColor,
                       size: 24,
                     ),
                   ),

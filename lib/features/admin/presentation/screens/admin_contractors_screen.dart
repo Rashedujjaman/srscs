@@ -226,7 +226,7 @@ class _AdminContractorsScreenState extends State<AdminContractorsScreen> {
               children: [
                 const Icon(Icons.location_on, size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
-                Text(contractor.assignedArea),
+                Text(contractor.assignedArea ?? 'N/A'),
               ],
             ),
             Row(

@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
 
 /// Available user roles in the system
 enum UserRole {
@@ -190,24 +191,6 @@ class AvailableAreas {
   static bool isValidArea(String area) {
     return areas.contains(area);
   }
-}
-
-/// Complaint status values
-enum ComplaintStatus {
-  /// Newly submitted, not yet reviewed
-  pending,
-
-  /// Admin has reviewed but not assigned
-  underReview,
-
-  /// Assigned to contractor and in progress
-  inProgress,
-
-  /// Work completed by contractor
-  resolved,
-
-  /// Rejected by admin
-  rejected,
 }
 
 extension ComplaintStatusExtension on ComplaintStatus {
