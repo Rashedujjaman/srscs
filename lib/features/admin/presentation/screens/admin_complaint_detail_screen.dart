@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../../core/constants/user_roles.dart';
 import '../../../complaint/domain/entities/complaint_entity.dart';
 import '../../../complaint/data/models/complaint_model.dart';
@@ -370,38 +373,105 @@ class _AdminComplaintDetailScreenState
           ),
           const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(12),
+            height: 250,
             decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue[200]!),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[300]!),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Lat: ${lat.toStringAsFixed(6)}',
-                        style: const TextStyle(
-                            fontSize: 12, fontFamily: 'monospace'),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                children: [
+                  // FlutterMap widget showing actual location
+                  FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(lat, lng),
+                      initialZoom: 15.0,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
                       ),
-                      Text(
-                        'Lng: ${lng.toStringAsFixed(6)}',
-                        style: const TextStyle(
-                            fontSize: 12, fontFamily: 'monospace'),
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.srscs',
+                        maxZoom: 19,
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(lat, lng),
+                            width: 40,
+                            height: 40,
+                            child: const Icon(
+                              Icons.location_on,
+                              size: 40,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.map, color: Colors.blue),
-                  onPressed: () => _openMap(lat, lng),
-                  tooltip: 'Open in Maps',
-                ),
-              ],
+                  // Attribution text (required for OpenStreetMap)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.white.withOpacity(0.7),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      child: const Text(
+                        '© OpenStreetMap contributors',
+                        style: TextStyle(fontSize: 8, color: Colors.black54),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  // Open in Maps button
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _openMap(lat, lng),
+                      icon: const Icon(Icons.open_in_new, size: 16),
+                      label: const Text('Open'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        elevation: 4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.location_on, size: 16, color: Colors.grey),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Coordinates: ${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}',
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () => _copyCoordinates(lat, lng),
+                icon: const Icon(Icons.copy, size: 16),
+                label: const Text('Copy'),
+              ),
+            ],
           ),
         ],
       ),
@@ -977,14 +1047,67 @@ class _AdminComplaintDetailScreenState
   }
 
   Future<void> _openMap(double lat, double lng) async {
-    final url =
-        Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
+    try {
+      // Try multiple map URL schemes in order of preference
+      final urls = [
+        // Google Maps app (if installed)
+        'google.navigation:q=$lat,$lng',
+        // Geo URI (works on most Android devices)
+        'geo:$lat,$lng?q=$lat,$lng',
+        // Web fallback
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+      ];
+
+      bool launched = false;
+      for (final urlString in urls) {
+        try {
+          final uri = Uri.parse(urlString);
+          launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+          if (launched) {
+            break;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+
+      if (!launched && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open maps')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _copyCoordinates(double lat, double lng) async {
+    try {
+      final coordinates =
+          '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}';
+      await Clipboard.setData(ClipboardData(text: coordinates));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Coordinates copied: $coordinates'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to copy coordinates'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

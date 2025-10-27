@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'dart:io';
 import '../../../../core/constants/user_roles.dart';
 import '../../../complaint/domain/entities/complaint_entity.dart';
@@ -370,6 +374,9 @@ class _ContractorTaskDetailScreenState
       return const SizedBox.shrink();
     }
 
+    final lat = complaint.location!['lat']!;
+    final lng = complaint.location!['lng']!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -384,46 +391,105 @@ class _ContractorTaskDetailScreenState
           ),
           const SizedBox(height: 12),
           Container(
-            height: 200,
+            height: 250,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[400]!),
+              border: Border.all(color: Colors.grey[300]!),
             ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
                 children: [
-                  const Icon(Icons.map, size: 48, color: Colors.grey),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Lat: ${complaint.location!['lat']!.toStringAsFixed(6)}',
-                    style: const TextStyle(fontSize: 12),
+                  // FlutterMap widget showing actual location
+                  FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(lat, lng),
+                      initialZoom: 15.0,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                      ),
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.srscs',
+                        maxZoom: 19,
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(lat, lng),
+                            width: 40,
+                            height: 40,
+                            child: Icon(
+                              Icons.location_on,
+                              size: 40,
+                              color: contractorColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Text(
-                    'Lng: ${complaint.location!['lng']!.toStringAsFixed(6)}',
-                    style: const TextStyle(fontSize: 12),
+                  // Attribution text (required for OpenStreetMap)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.white.withOpacity(0.7),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      child: const Text(
+                        '© OpenStreetMap contributors',
+                        style: TextStyle(fontSize: 8, color: Colors.black54),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // TODO: Open in maps app
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Opening in maps...'),
+                  // Open in Maps button
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _openInMaps(lat, lng),
+                      icon: const Icon(Icons.open_in_new, size: 16),
+                      label: const Text('Open'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: contractorColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.navigation, size: 16),
-                    label: const Text('Open in Maps'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: contractorColor,
-                      foregroundColor: Colors.white,
+                        elevation: 4,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.location_on, size: 16, color: Colors.grey),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Coordinates: ${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}',
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () => _copyCoordinates(lat, lng),
+                icon: const Icon(Icons.copy, size: 16),
+                label: const Text('Copy'),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
         ],
@@ -791,6 +857,79 @@ class _ContractorTaskDetailScreenState
       return '${difference.inDays}d ago';
     } else {
       return DateFormat('MMM d, yyyy').format(date);
+    }
+  }
+
+  Future<void> _openInMaps(double lat, double lng) async {
+    try {
+      // Try multiple map URL schemes in order of preference
+      final urls = [
+        // Google Maps app (if installed)
+        'google.navigation:q=$lat,$lng',
+        // Geo URI (works on most Android devices)
+        'geo:$lat,$lng?q=$lat,$lng',
+        // Web fallback
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+      ];
+
+      bool launched = false;
+      for (final urlString in urls) {
+        try {
+          final uri = Uri.parse(urlString);
+          launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+          if (launched) {
+            break;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open maps'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _copyCoordinates(double lat, double lng) async {
+    try {
+      final coordinates =
+          '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}';
+      await Clipboard.setData(ClipboardData(text: coordinates));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Coordinates copied: $coordinates'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to copy coordinates'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

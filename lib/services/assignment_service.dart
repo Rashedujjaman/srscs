@@ -16,7 +16,7 @@ class AssignmentService {
       'assignedTo': contractorId,
       'assignedBy': adminId,
       'assignedAt': FieldValue.serverTimestamp(),
-      'status': 'inProgress',
+      'status': 'underReview', // Changed from 'inProgress' to 'underReview'
       'updatedAt': FieldValue.serverTimestamp(),
     });
 

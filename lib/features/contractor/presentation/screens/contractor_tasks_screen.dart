@@ -79,17 +79,15 @@ class _ContractorTasksScreenState extends State<ContractorTasksScreen>
   Widget _buildTaskList(String userId, ComplaintStatus? statusFilter) {
     Query query = _firestore
         .collection('complaints')
-        .where('assignedTo', isEqualTo: userId);
+        .where('assignedTo', isEqualTo: userId)
+        .orderBy('createdAt', descending: true);
 
+    // Only add status filter for specific tabs (Pending/In Progress)
     if (statusFilter != null) {
       query = query.where('status',
           isEqualTo: statusFilter.toString().split('.').last);
-    } else {
-      // For "All" tab, exclude resolved complaints
-      query = query.where('status', whereNotIn: ['resolved', 'rejected']);
     }
-
-    query = query.orderBy('createdAt', descending: true);
+    // For "All" tab, we'll filter client-side to avoid Firestore index issues
 
     return StreamBuilder<QuerySnapshot>(
       stream: query.snapshots(),
@@ -143,9 +141,43 @@ class _ContractorTasksScreenState extends State<ContractorTasksScreen>
           );
         }
 
-        final complaints = snapshot.data!.docs
+        // Convert to complaint entities
+        List<ComplaintEntity> complaints = snapshot.data!.docs
             .map((doc) => ComplaintModel.fromFirestore(doc))
             .toList();
+
+        // For "All" tab, filter out resolved and rejected tasks client-side
+        if (statusFilter == null) {
+          complaints = complaints
+              .where((c) =>
+                  c.status != ComplaintStatus.resolved &&
+                  c.status != ComplaintStatus.rejected)
+              .toList();
+        }
+
+        // Handle empty state after filtering
+        if (complaints.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.inbox, size: 80, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Text(
+                  statusFilter != null
+                      ? 'No ${_getStatusText(statusFilter).toLowerCase()} tasks'
+                      : 'No active tasks',
+                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'New assignments will appear here',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          );
+        }
 
         return RefreshIndicator(
           onRefresh: () async {
