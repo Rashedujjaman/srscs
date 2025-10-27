@@ -36,6 +36,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
   bool _isUploading = false;
   late DatabaseReference _adminChatStatusRef;
   late String _adminId;
+  bool _hasChatMessages = false; // Track if chat has messages
 
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
     _adminChatStatusRef =
         FirebaseDatabase.instance.ref('admin_chat_status/${widget.userId}');
     _markMessagesAsRead();
-    _setAdminViewingStatus(true);
+    // Don't set viewing status here - wait until we confirm chat has messages
   }
 
   @override
@@ -76,13 +77,29 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
   }
 
   Future<void> _setAdminViewingStatus(bool isViewing) async {
+    // Only set viewing status if chat has messages
+    // This prevents creating phantom admin viewing entries for non-existent chats
+    if (!_hasChatMessages && isViewing) {
+      print('📱 Admin skipping viewing status - no messages in chat yet');
+      return;
+    }
+
     try {
-      await _adminChatStatusRef.set({
-        'isViewing': isViewing,
-        'lastSeen': ServerValue.timestamp,
-        'adminId': _adminId,
-      });
-      print('📱 Admin viewing status set for ${widget.userId}: $isViewing');
+      if (isViewing) {
+        await _adminChatStatusRef.set({
+          'isViewing': true,
+          'lastSeen': ServerValue.timestamp,
+          'adminId': _adminId,
+        });
+        print('📱 Admin viewing status set for ${widget.userId}: true');
+      } else {
+        await _adminChatStatusRef.set({
+          'isViewing': false,
+          'lastSeen': ServerValue.timestamp,
+          'adminId': _adminId,
+        });
+        print('📱 Admin viewing status set for ${widget.userId}: false');
+      }
     } catch (e) {
       print('❌ Error setting admin viewing status: $e');
     }
@@ -119,6 +136,14 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
         message: message,
         isAdmin: true,
       );
+
+      // Mark that chat now has messages and set viewing status
+      if (!_hasChatMessages) {
+        setState(() {
+          _hasChatMessages = true;
+        });
+        _setAdminViewingStatus(true);
+      }
 
       _messageCtrl.clear();
       Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
@@ -198,6 +223,14 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
         mediaUrl: downloadUrl,
         isAdmin: true,
       );
+
+      // Mark that chat now has messages and set viewing status
+      if (!_hasChatMessages) {
+        setState(() {
+          _hasChatMessages = true;
+        });
+        _setAdminViewingStatus(true);
+      }
 
       Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
     } catch (e) {
@@ -326,6 +359,15 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
                 }
 
                 final messages = snapshot.data ?? [];
+
+                // Update chat messages flag and set viewing status if messages exist
+                if (messages.isNotEmpty && !_hasChatMessages) {
+                  _hasChatMessages = true;
+                  // Set viewing status now that we know chat has messages
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _setAdminViewingStatus(true);
+                  });
+                }
 
                 if (messages.isEmpty) {
                   return const Center(

@@ -31,6 +31,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   Color _primaryColor = const Color(0xFF9F7AEA);
   DatabaseReference? _chatStatusRef;
   UserRole? _userRole;
+  bool _hasChatMessages = false; // Track if chat has messages
 
   @override
   void initState() {
@@ -72,13 +73,29 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || _chatStatusRef == null) return;
 
+    // Only set viewing status if chat has messages
+    // This prevents creating phantom chats for users who haven't sent any messages yet
+    if (!_hasChatMessages && isViewing) {
+      print('📱 Skipping viewing status - no messages in chat yet');
+      return;
+    }
+
     try {
-      await _chatStatusRef!.set({
-        'isViewing': isViewing,
-        'lastSeen': ServerValue.timestamp,
-      });
-      print(
-          '📱 Chat viewing status set: $isViewing (${_userRole?.toString()})');
+      if (isViewing) {
+        // Set viewing status
+        await _chatStatusRef!.set({
+          'isViewing': true,
+          'lastSeen': ServerValue.timestamp,
+        });
+        print('📱 Chat viewing status set: true (${_userRole?.toString()})');
+      } else {
+        // Clear viewing status when leaving chat
+        await _chatStatusRef!.set({
+          'isViewing': false,
+          'lastSeen': ServerValue.timestamp,
+        });
+        print('📱 Chat viewing status set: false (${_userRole?.toString()})');
+      }
     } catch (e) {
       print('❌ Error setting chat viewing status: $e');
     }
@@ -145,9 +162,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               FirebaseDatabase.instance.ref('chats/${user.uid}/chatStatus');
         });
     }
-
-    // Set viewing status to true after initializing the reference
-    _setChatViewingStatus(true);
   }
 
   void _scrollToBottom() {
@@ -175,6 +189,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       userName: userName,
       message: message,
     );
+
+    // Mark that chat now has messages and set viewing status
+    if (!_hasChatMessages) {
+      setState(() {
+        _hasChatMessages = true;
+      });
+      _setChatViewingStatus(true);
+    }
 
     _messageCtrl.clear();
     Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
@@ -256,6 +278,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         type: type,
         mediaUrl: downloadUrl,
       );
+
+      // Mark that chat now has messages and set viewing status
+      if (!_hasChatMessages) {
+        setState(() {
+          _hasChatMessages = true;
+        });
+        _setChatViewingStatus(true);
+      }
 
       Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
     } catch (e) {
@@ -383,6 +413,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 }
 
                 final messages = snapshot.data ?? [];
+
+                // Update chat messages flag and set viewing status if messages exist
+                if (messages.isNotEmpty && !_hasChatMessages) {
+                  _hasChatMessages = true;
+                  // Set viewing status now that we know chat has messages
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _setChatViewingStatus(true);
+                  });
+                }
 
                 if (messages.isEmpty) {
                   return const Center(
