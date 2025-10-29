@@ -73,39 +73,39 @@ class ComplaintDetailScreen extends StatelessWidget {
                   ],
 
                   // Admin Notes
-                  if (complaint.adminNotes != null &&
-                      complaint.adminNotes!.isNotEmpty) ...[
-                    _buildSection(
-                      title: 'Admin Notes',
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.blue[200]!),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.info_outline,
-                                color: Colors.blue, size: 20),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                complaint.adminNotes!,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.blue,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                  // if (complaint.adminNotes != null &&
+                  //     complaint.adminNotes!.isNotEmpty) ...[
+                  //   _buildSection(
+                  //     title: 'Admin Notes',
+                  //     child: Container(
+                  //       padding: const EdgeInsets.all(12),
+                  //       decoration: BoxDecoration(
+                  //         color: Colors.blue[50],
+                  //         borderRadius: BorderRadius.circular(8),
+                  //         border: Border.all(color: Colors.blue[200]!),
+                  //       ),
+                  //       child: Row(
+                  //         crossAxisAlignment: CrossAxisAlignment.start,
+                  //         children: [
+                  //           const Icon(Icons.info_outline,
+                  //               color: Colors.blue, size: 20),
+                  //           const SizedBox(width: 12),
+                  //           Expanded(
+                  //             child: Text(
+                  //               complaint.adminNotes!,
+                  //               style: const TextStyle(
+                  //                 fontSize: 14,
+                  //                 color: Colors.blue,
+                  //                 height: 1.5,
+                  //               ),
+                  //             ),
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   const SizedBox(height: 20),
+                  // ],
 
                   // Assigned To
                   if (complaint.assignedTo != null &&
