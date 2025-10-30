@@ -43,6 +43,9 @@ import 'features/profile/domain/usecases/update_profile.dart';
 import 'features/profile/domain/usecases/update_profile_photo.dart';
 import 'features/profile/presentation/providers/profile_provider.dart';
 
+// Notifications
+import 'features/notifications/presentation/screens/notifications_screen.dart';
+
 // Complaint
 import 'features/complaint/presentation/screens/submit_complaint_screen.dart';
 import 'features/complaint/presentation/screens/complaint_tracking_screen.dart';
@@ -263,6 +266,11 @@ class MyApp extends StatelessWidget {
           GetPage(
             name: AppRoutes.profile,
             page: () => const ProfileScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.notifications,
+            page: () => const NotificationsScreen(),
             middlewares: [RouteGuardMiddleware()],
           ),
 

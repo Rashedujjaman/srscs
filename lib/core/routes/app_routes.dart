@@ -17,6 +17,7 @@ class AppRoutes {
   static const String trackComplaints = '/track-complaints';
   static const String citizenChat = '/chat';
   static const String profile = '/profile';
+  static const String notifications = '/notifications';
 
   // ==================== Contractor Routes ====================
   static const String contractorDashboard = '/contractor/dashboard';

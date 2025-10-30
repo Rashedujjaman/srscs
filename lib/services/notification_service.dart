@@ -245,6 +245,13 @@ class NotificationService {
     Map<String, dynamic> data = message.data;
 
     if (notification != null) {
+      // Save notification to Firestore (except chat messages)
+      await _saveNotificationToFirestore(
+        title: notification.title ?? '',
+        body: notification.body ?? '',
+        data: data,
+      );
+
       // Determine notification importance based on type
       Importance importance = Importance.high;
       Priority priority = Priority.high;
@@ -284,6 +291,67 @@ class NotificationService {
         payload: _encodePayload(data),
       );
     }
+  }
+
+  /// Save notification to Firestore for persistent storage
+  /// This allows the notification bell icon to show all notifications
+  Future<void> _saveNotificationToFirestore({
+    required String title,
+    required String body,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return;
+
+      final String? type = data['type'];
+
+      // Skip saving chat messages to the notifications collection
+      if (type != null && _isChatNotification(type)) {
+        print(
+            '⏭️ Skipping chat notification from being saved to notifications collection');
+        return;
+      }
+
+      // Determine priority from notification data
+      String priority = data['priority'] ?? 'normal';
+      if (type == 'urgent_notice' || type == 'emergency') {
+        priority = 'critical';
+      }
+
+      // Save to user_notifications collection
+      await _firestore
+          .collection('user_notifications')
+          .doc(userId)
+          .collection('notifications')
+          .add({
+        'title': title,
+        'body': body,
+        'type': type ?? 'notice',
+        'priority': priority,
+        'timestamp': FieldValue.serverTimestamp(),
+        'isRead': false,
+        'data': data,
+      });
+
+      print('✅ Notification saved to Firestore for user: $userId');
+    } catch (e) {
+      print('❌ Error saving notification to Firestore: $e');
+    }
+  }
+
+  /// Check if notification type is a chat message
+  bool _isChatNotification(String type) {
+    const chatTypes = [
+      'chat_message',
+      'admin_chat_message',
+      'user_chat_message',
+      'admin_contractor_chat_message',
+      'contractor_chat_message',
+      'chat',
+      'admin_reply',
+    ];
+    return chatTypes.contains(type);
   }
 
   /// Handle notification tap (local notification)

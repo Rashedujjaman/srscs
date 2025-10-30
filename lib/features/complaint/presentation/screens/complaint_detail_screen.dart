@@ -108,13 +108,13 @@ class ComplaintDetailScreen extends StatelessWidget {
                   // ],
 
                   // Assigned To
-                  if (complaint.assignedTo != null &&
-                      complaint.assignedTo!.isNotEmpty)
-                    _buildInfoCard(
-                      icon: Icons.person_outline,
-                      title: 'Assigned To',
-                      value: complaint.assignedTo!,
-                    ),
+                  // if (complaint.assignedTo != null &&
+                  //     complaint.assignedTo!.isNotEmpty)
+                  //   _buildInfoCard(
+                  //     icon: Icons.person_outline,
+                  //     title: 'Assigned To',
+                  //     value: complaint.assignedTo!,
+                  //   ),
 
                   // Timestamps
                   _buildInfoCard(

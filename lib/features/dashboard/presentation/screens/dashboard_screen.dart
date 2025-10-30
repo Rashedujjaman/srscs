@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:srscs/core/routes/app_routes.dart';
 import 'package:srscs/core/routes/route_manager.dart';
 import 'package:srscs/core/theme/app_theme_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
+import '../../../notifications/data/repositories/notification_repository.dart';
 import '../widgets/statistics_card.dart';
 import '../widgets/news_card.dart';
 import '../widgets/notice_card.dart';
@@ -250,42 +252,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Build AppBar
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final theme = Provider.of<AppThemeProvider>(context, listen: false);
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    final notificationRepository = NotificationRepositoryImpl();
+
     return AppBar(
       backgroundColor: theme.primaryColor,
       elevation: 0,
-      // toolbarHeight: 70,
       automaticallyImplyLeading: false,
-      // leading: Consumer<ProfileProvider>(
-      //   builder: (context, profileProvider, child) {
-      //     return GestureDetector(
-      //       onTap: () => Get.toNamed(AppRoutes.profile),
-      //       child: SizedBox(
-      //         width: 48,
-      //         height: 48,
-      //         child: ClipOval(
-      //           child: profileProvider.profile?.profilePhotoUrl != null &&
-      //                   profileProvider.profile!.profilePhotoUrl!.isNotEmpty
-      //               ? Image.network(
-      //                   profileProvider.profile!.profilePhotoUrl!,
-      //                   fit: BoxFit.cover,
-      //                   width: 48,
-      //                   height: 48,
-      //                   errorBuilder: (context, error, stackTrace) => Container(
-      //                     color: const Color(0xFFE5D4FF),
-      //                     alignment: Alignment.center,
-      //                     child: const Icon(Icons.person, color: Colors.black),
-      //                   ),
-      //                 )
-      //               : Container(
-      //                   color: const Color(0xFFE5D4FF),
-      //                   alignment: Alignment.center,
-      //                   child: const Icon(Icons.person, color: Colors.black),
-      //                 ),
-      //         ),
-      //       ),
-      //     );
-      //   },
-      // ),
       title: const Text(
         'SRSCS',
         style: TextStyle(
@@ -296,51 +269,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         textAlign: TextAlign.center,
       ),
-
       centerTitle: true,
       actions: [
-        Consumer<DashboardProvider>(
-          builder: (context, dashboardProvider, child) {
-            return Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.notifications_none,
-                    color: Colors.black87,
+        if (userId != null)
+          StreamBuilder<int>(
+            stream: notificationRepository.unreadCountStream(userId),
+            builder: (context, snapshot) {
+              final unreadCount = snapshot.data ?? 0;
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.notifications_none,
+                      color: Colors.black87,
+                    ),
+                    onPressed: () {
+                      Get.toNamed('/notifications');
+                    },
                   ),
-                  onPressed: () {
-                    _showAllNotices(context, dashboardProvider.noticesList);
-                  },
-                ),
-                if (dashboardProvider.unreadNoticeCount > 0)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        '${dashboardProvider.unreadNoticeCount}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
                         ),
-                        textAlign: TextAlign.center,
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          unreadCount > 99 ? '99+' : '$unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            );
-          },
-        ),
+                ],
+              );
+            },
+          ),
       ],
     );
   }
@@ -598,13 +573,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Show all notices
   void _showAllNotices(BuildContext context, List noticesList) {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => Scaffold(
           appBar: AppBar(
             title: const Text('All Notices'),
-            backgroundColor: const Color(0xFF9F7AEA),
+            backgroundColor: theme.primaryColor,
           ),
           body: ListView.builder(
             padding: const EdgeInsets.all(16),

@@ -79,7 +79,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [contractorColor, contractorColor.withOpacity(0.7)],
+          colors: [contractorColor, contractorColor.withValues(alpha: 0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -98,7 +98,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
               Text(
                 'Welcome back,',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 16,
                 ),
               ),
@@ -234,9 +234,9 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -355,7 +355,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: statusColor.withOpacity(0.3)),
+        side: BorderSide(color: statusColor.withValues(alpha: 0.3)),
       ),
       child: InkWell(
         onTap: () {
@@ -376,7 +376,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.2),
+                      color: statusColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: statusColor),
                     ),
