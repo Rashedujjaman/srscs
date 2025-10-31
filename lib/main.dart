@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:srscs/features/complaint/presentation/screens/complaint_detail_screen.dart';
 import 'firebase_options.dart';
 
 // Core Routes
@@ -256,6 +257,11 @@ class MyApp extends StatelessWidget {
           GetPage(
             name: AppRoutes.trackComplaints,
             page: () => const ComplaintTrackingScreen(),
+            middlewares: [RouteGuardMiddleware()],
+          ),
+          GetPage(
+            name: AppRoutes.complaintDetail,
+            page: () => const ComplaintDetailScreen(),
             middlewares: [RouteGuardMiddleware()],
           ),
           GetPage(

@@ -1,150 +1,213 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
+import 'package:srscs/features/complaint/data/models/complaint_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../domain/entities/complaint_entity.dart';
 
-class ComplaintDetailScreen extends StatelessWidget {
-  final ComplaintEntity complaint;
+class ComplaintDetailScreen extends StatefulWidget {
+  final ComplaintEntity? complaint;
 
-  const ComplaintDetailScreen({super.key, required this.complaint});
+  const ComplaintDetailScreen({super.key, this.complaint});
+
+  @override
+  State<ComplaintDetailScreen> createState() => _ComplaintDetailScreenState();
+}
+
+class _ComplaintDetailScreenState extends State<ComplaintDetailScreen> {
+  ComplaintEntity? complaint;
+  String? complaintId;
+
+  @override
+  void initState() {
+    super.initState();
+    complaint = widget.complaint;
+    complaintId = complaint?.id ?? Get.arguments as String?;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Complaint Details'),
-        backgroundColor: const Color(0xFF9F7AEA),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.share),
-        //     onPressed: () {
-        //       // TODO: Implement share functionality
-        //     },
-        //   ),
-        // ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status Banner
-            _buildStatusBanner(),
-
-            // Main Content
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Complaint Type & Date
-                  _buildHeader(),
-                  const SizedBox(height: 20),
-
-                  // Description
-                  _buildSection(
-                    title: 'Description',
-                    child: Text(
-                      complaint.description,
-                      style: const TextStyle(fontSize: 16, height: 1.5),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Location Map
-                  if (complaint.location != null) ...[
-                    _buildSection(
-                      title: 'Location',
-                      child: _buildLocationMap(context),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-
-                  // Attached Media
-                  if (complaint.mediaUrls.isNotEmpty) ...[
-                    _buildSection(
-                      title: 'Attached Media (${complaint.mediaUrls.length})',
-                      child: _buildMediaGrid(),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-
-                  // Admin Notes
-                  // if (complaint.adminNotes != null &&
-                  //     complaint.adminNotes!.isNotEmpty) ...[
-                  //   _buildSection(
-                  //     title: 'Admin Notes',
-                  //     child: Container(
-                  //       padding: const EdgeInsets.all(12),
-                  //       decoration: BoxDecoration(
-                  //         color: Colors.blue[50],
-                  //         borderRadius: BorderRadius.circular(8),
-                  //         border: Border.all(color: Colors.blue[200]!),
-                  //       ),
-                  //       child: Row(
-                  //         crossAxisAlignment: CrossAxisAlignment.start,
-                  //         children: [
-                  //           const Icon(Icons.info_outline,
-                  //               color: Colors.blue, size: 20),
-                  //           const SizedBox(width: 12),
-                  //           Expanded(
-                  //             child: Text(
-                  //               complaint.adminNotes!,
-                  //               style: const TextStyle(
-                  //                 fontSize: 14,
-                  //                 color: Colors.blue,
-                  //                 height: 1.5,
-                  //               ),
-                  //             ),
-                  //           ),
-                  //         ],
-                  //       ),
-                  //     ),
-                  //   ),
-                  //   const SizedBox(height: 20),
-                  // ],
-
-                  // Assigned To
-                  // if (complaint.assignedTo != null &&
-                  //     complaint.assignedTo!.isNotEmpty)
-                  //   _buildInfoCard(
-                  //     icon: Icons.person_outline,
-                  //     title: 'Assigned To',
-                  //     value: complaint.assignedTo!,
-                  //   ),
-
-                  // Timestamps
-                  _buildInfoCard(
-                    icon: Icons.access_time,
-                    title: 'Created At',
-                    value: DateFormat('MMM dd, yyyy - hh:mm a')
-                        .format(complaint.createdAt),
-                  ),
-                  if (complaint.updatedAt != null)
-                    _buildInfoCard(
-                      icon: Icons.update,
-                      title: 'Last Updated',
-                      value: DateFormat('MMM dd, yyyy - hh:mm a')
-                          .format(complaint.updatedAt!),
-                    ),
-                ],
-              ),
-            ),
-          ],
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
+    if (complaintId == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Complaint Details'),
+          backgroundColor: theme.primaryColor,
         ),
-      ),
+        body: const Center(
+          child: Text('Invalid complaint ID'),
+        ),
+      );
+    }
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('complaints')
+          .doc(complaintId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Complaint Details'),
+              backgroundColor: theme.primaryColor,
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Complaint Details'),
+              backgroundColor: theme.primaryColor,
+            ),
+            body: const Center(
+              child: Text('Complaint not found'),
+            ),
+          );
+        }
+        final complaint = ComplaintModel.fromFirestore(snapshot.data!);
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Complaint Details'),
+            backgroundColor: theme.primaryColor,
+            // actions: [
+            //   IconButton(
+            //     icon: const Icon(Icons.share),
+            //     onPressed: () {
+            //       // TODO: Implement share functionality
+            //     },
+            //   ),
+            // ],
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Status Banner
+                _buildStatusBanner(complaint.status),
+
+                // Main Content
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Complaint Type & Date
+                      _buildHeader(complaint),
+                      const SizedBox(height: 20),
+
+                      // Description
+                      _buildSection(
+                        title: 'Description',
+                        child: Text(
+                          complaint.description,
+                          style: const TextStyle(fontSize: 16, height: 1.5),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Location Map
+                      if (complaint.location != null) ...[
+                        _buildSection(
+                          title: 'Location',
+                          child: _buildLocationMap(context, complaint),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // Attached Media
+                      if (complaint.mediaUrls.isNotEmpty) ...[
+                        _buildSection(
+                          title:
+                              'Attached Media (${complaint.mediaUrls.length})',
+                          child: _buildMediaGrid(complaint),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // Admin Notes
+                      // if (complaint.adminNotes != null &&
+                      //     complaint.adminNotes!.isNotEmpty) ...[
+                      //   _buildSection(
+                      //     title: 'Admin Notes',
+                      //     child: Container(
+                      //       padding: const EdgeInsets.all(12),
+                      //       decoration: BoxDecoration(
+                      //         color: Colors.blue[50],
+                      //         borderRadius: BorderRadius.circular(8),
+                      //         border: Border.all(color: Colors.blue[200]!),
+                      //       ),
+                      //       child: Row(
+                      //         crossAxisAlignment: CrossAxisAlignment.start,
+                      //         children: [
+                      //           const Icon(Icons.info_outline,
+                      //               color: Colors.blue, size: 20),
+                      //           const SizedBox(width: 12),
+                      //           Expanded(
+                      //             child: Text(
+                      //               complaint.adminNotes!,
+                      //               style: const TextStyle(
+                      //                 fontSize: 14,
+                      //                 color: Colors.blue,
+                      //                 height: 1.5,
+                      //               ),
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      //   const SizedBox(height: 20),
+                      // ],
+
+                      // Assigned To
+                      // if (complaint.assignedTo != null &&
+                      //     complaint.assignedTo!.isNotEmpty)
+                      //   _buildInfoCard(
+                      //     icon: Icons.person_outline,
+                      //     title: 'Assigned To',
+                      //     value: complaint.assignedTo!,
+                      //   ),
+
+                      // Timestamps
+                      _buildInfoCard(
+                        icon: Icons.access_time,
+                        title: 'Created At',
+                        value: DateFormat('MMM dd, yyyy - hh:mm a')
+                            .format(complaint.createdAt),
+                      ),
+                      if (complaint.updatedAt != null)
+                        _buildInfoCard(
+                          icon: Icons.update,
+                          title: 'Last Updated',
+                          value: DateFormat('MMM dd, yyyy - hh:mm a')
+                              .format(complaint.updatedAt!),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildStatusBanner() {
+  Widget _buildStatusBanner(ComplaintStatus status) {
     Color statusColor;
     IconData statusIcon;
     String statusText;
 
-    switch (complaint.status) {
+    switch (status) {
       case ComplaintStatus.pending:
         statusColor = Colors.orange;
         statusIcon = Icons.schedule;
@@ -198,14 +261,14 @@ class ComplaintDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ComplaintEntity complaint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Icon(
-              _getTypeIcon(),
+              _getTypeIcon(complaint.type),
               size: 32,
               color: const Color(0xFF9F7AEA),
             ),
@@ -236,8 +299,8 @@ class ComplaintDetailScreen extends StatelessWidget {
     );
   }
 
-  IconData _getTypeIcon() {
-    switch (complaint.type) {
+  IconData _getTypeIcon(ComplaintType type) {
+    switch (type) {
       case ComplaintType.pothole:
         return Icons.warning;
       case ComplaintType.brokenSign:
@@ -273,7 +336,7 @@ class ComplaintDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationMap(BuildContext context) {
+  Widget _buildLocationMap(BuildContext context, ComplaintEntity complaint) {
     final lat = complaint.location!['lat']!;
     final lng = complaint.location!['lng']!;
 
@@ -392,7 +455,7 @@ class ComplaintDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMediaGrid() {
+  Widget _buildMediaGrid(ComplaintEntity complaint) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

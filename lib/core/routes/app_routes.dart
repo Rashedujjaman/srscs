@@ -15,6 +15,7 @@ class AppRoutes {
   static const String citizenDashboard = '/dashboard';
   static const String submitComplaint = '/submit-complaint';
   static const String trackComplaints = '/track-complaints';
+  static const String complaintDetail = '/complaint-detail';
   static const String citizenChat = '/chat';
   static const String profile = '/profile';
   static const String notifications = '/notifications';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import '../../data/repositories/notification_repository.dart';
+import '../../data/repositories/notification_repository_impl.dart';
 import '../../domain/entities/notification_item.dart';
 import '../widgets/notification_item_card.dart';
 import '../../../../core/routes/app_routes.dart';
@@ -14,7 +14,7 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  final NotificationRepository _repository = NotificationRepositoryImpl();
+  final NotificationRepositoryImpl _repository = NotificationRepositoryImpl();
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
   @override
@@ -173,7 +173,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case NotificationType.complaintStatus:
       case NotificationType.taskAssigned:
         // Navigate to track complaints screen
-        Get.toNamed(AppRoutes.trackComplaints);
+        Get.toNamed(AppRoutes.complaintDetail,
+            arguments: notification.data['complaintId']);
         break;
 
       case NotificationType.newComplaint:

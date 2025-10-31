@@ -7,7 +7,7 @@ import 'package:srscs/core/routes/route_manager.dart';
 import 'package:srscs/core/theme/app_theme_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
-import '../../../notifications/data/repositories/notification_repository.dart';
+import '../../../notifications/data/repositories/notification_repository_impl.dart';
 import '../widgets/statistics_card.dart';
 import '../widgets/news_card.dart';
 import '../widgets/notice_card.dart';
@@ -284,7 +284,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: Colors.black87,
                     ),
                     onPressed: () {
-                      Get.toNamed('/notifications');
+                      Get.toNamed(AppRoutes.notifications);
                     },
                   ),
                   if (unreadCount > 0)
