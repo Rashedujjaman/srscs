@@ -17,10 +17,4 @@ abstract class DashboardRepository {
 
   /// Fetch specific notice by ID
   Future<NoticeItem> getNoticeById(String noticeId);
-
-  /// Mark notice as read by user
-  Future<void> markNoticeAsRead(String userId, String noticeId);
-
-  /// Get user's unread notice count
-  Future<int> getUnreadNoticeCount(String userId);
 }

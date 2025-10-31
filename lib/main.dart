@@ -32,8 +32,6 @@ import 'features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'features/dashboard/domain/usecases/get_dashboard_statistics.dart';
 import 'features/dashboard/domain/usecases/get_latest_news.dart';
 import 'features/dashboard/domain/usecases/get_active_notices.dart';
-import 'features/dashboard/domain/usecases/get_unread_notice_count.dart';
-import 'features/dashboard/domain/usecases/mark_notice_as_read.dart';
 import 'features/dashboard/presentation/providers/dashboard_provider.dart';
 
 import 'features/profile/presentation/screens/profile_screen.dart';
@@ -163,8 +161,6 @@ class MyApp extends StatelessWidget {
     final getDashboardStatisticsUsecase = GetDashboardStatistics(dashboardRepo);
     final getLatestNewsUsecase = GetLatestNews(dashboardRepo);
     final getActiveNoticesUsecase = GetActiveNotices(dashboardRepo);
-    final getUnreadNoticeCountUsecase = GetUnreadNoticeCount(dashboardRepo);
-    final markNoticeAsReadUsecase = MarkNoticeAsRead(dashboardRepo);
 
     // Admin dependencies
     final adminRemote = AdminRemoteDataSource(firestore: firestore);
@@ -207,8 +203,6 @@ class MyApp extends StatelessWidget {
             getDashboardStatisticsUseCase: getDashboardStatisticsUsecase,
             getLatestNewsUseCase: getLatestNewsUsecase,
             getActiveNoticesUseCase: getActiveNoticesUsecase,
-            getUnreadNoticeCountUseCase: getUnreadNoticeCountUsecase,
-            markNoticeAsReadUseCase: markNoticeAsReadUsecase,
             firebaseAuth: fb_auth.FirebaseAuth.instance,
           ),
         ),

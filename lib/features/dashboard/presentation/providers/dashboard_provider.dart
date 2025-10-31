@@ -6,23 +6,17 @@ import '../../domain/entities/notice_item.dart';
 import '../../domain/usecases/get_dashboard_statistics.dart';
 import '../../domain/usecases/get_latest_news.dart';
 import '../../domain/usecases/get_active_notices.dart';
-import '../../domain/usecases/get_unread_notice_count.dart';
-import '../../domain/usecases/mark_notice_as_read.dart';
 
 class DashboardProvider with ChangeNotifier {
   final GetDashboardStatistics getDashboardStatisticsUseCase;
   final GetLatestNews getLatestNewsUseCase;
   final GetActiveNotices getActiveNoticesUseCase;
-  final GetUnreadNoticeCount getUnreadNoticeCountUseCase;
-  final MarkNoticeAsRead markNoticeAsReadUseCase;
   final FirebaseAuth firebaseAuth;
 
   DashboardProvider({
     required this.getDashboardStatisticsUseCase,
     required this.getLatestNewsUseCase,
     required this.getActiveNoticesUseCase,
-    required this.getUnreadNoticeCountUseCase,
-    required this.markNoticeAsReadUseCase,
     required this.firebaseAuth,
   });
 
@@ -30,7 +24,6 @@ class DashboardProvider with ChangeNotifier {
   DashboardStatistics? _statistics;
   List<NewsItem> _newsList = [];
   List<NoticeItem> _noticesList = [];
-  int _unreadNoticeCount = 0;
 
   bool _isLoadingStatistics = false;
   bool _isLoadingNews = false;
@@ -42,7 +35,6 @@ class DashboardProvider with ChangeNotifier {
   DashboardStatistics? get statistics => _statistics;
   List<NewsItem> get newsList => _newsList;
   List<NoticeItem> get noticesList => _noticesList;
-  int get unreadNoticeCount => _unreadNoticeCount;
 
   bool get isLoadingStatistics => _isLoadingStatistics;
   bool get isLoadingNews => _isLoadingNews;
@@ -67,7 +59,6 @@ class DashboardProvider with ChangeNotifier {
       loadStatistics(),
       loadNews(),
       loadNotices(),
-      loadUnreadNoticeCount(),
     ]);
   }
 
@@ -108,7 +99,7 @@ class DashboardProvider with ChangeNotifier {
     }
   }
 
-  /// Load active notices
+  // /// Load active notices
   Future<void> loadNotices({bool includeExpired = false}) async {
     _isLoadingNotices = true;
     _error = null;
@@ -123,19 +114,6 @@ class DashboardProvider with ChangeNotifier {
     } finally {
       _isLoadingNotices = false;
       notifyListeners();
-    }
-  }
-
-  /// Load unread notice count
-  Future<void> loadUnreadNoticeCount() async {
-    final userId = currentUserId;
-    if (userId == null) return;
-
-    try {
-      _unreadNoticeCount = await getUnreadNoticeCountUseCase.call(userId);
-      notifyListeners();
-    } catch (e) {
-      _error = 'Failed to load unread notice count: $e';
     }
   }
 
@@ -167,19 +145,5 @@ class DashboardProvider with ChangeNotifier {
   /// Get recent news (published within last 7 days)
   List<NewsItem> get recentNews {
     return _newsList.where((news) => news.isRecent).toList();
-  }
-
-  /// Mark notice as read
-  Future<void> markNoticeAsRead(String noticeId) async {
-    final userId = currentUserId;
-    if (userId == null) return;
-
-    try {
-      await markNoticeAsReadUseCase.call(userId, noticeId);
-      // Reload unread count after marking as read
-      await loadUnreadNoticeCount();
-    } catch (e) {
-      _error = 'Failed to mark notice as read: $e';
-    }
   }
 }

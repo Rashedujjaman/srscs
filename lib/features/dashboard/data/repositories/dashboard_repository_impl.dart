@@ -30,14 +30,4 @@ class DashboardRepositoryImpl implements DashboardRepository {
   Future<NoticeItem> getNoticeById(String noticeId) async {
     return await remoteDataSource.getNoticeById(noticeId);
   }
-
-  @override
-  Future<void> markNoticeAsRead(String userId, String noticeId) async {
-    return await remoteDataSource.markNoticeAsRead(userId, noticeId);
-  }
-
-  @override
-  Future<int> getUnreadNoticeCount(String userId) async {
-    return await remoteDataSource.getUnreadNoticeCount(userId);
-  }
 }

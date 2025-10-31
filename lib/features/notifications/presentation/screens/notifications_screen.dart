@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
 import '../../data/repositories/notification_repository_impl.dart';
 import '../../domain/entities/notification_item.dart';
 import '../widgets/notification_item_card.dart';
@@ -19,11 +21,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
     if (userId == null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Notifications'),
-          backgroundColor: const Color(0xFF9F7AEA),
+          backgroundColor: theme.primaryColor,
         ),
         body: const Center(
           child: Text('Please log in to view notifications'),
@@ -34,7 +37,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),
-        backgroundColor: const Color(0xFF9F7AEA),
+        backgroundColor: theme.primaryColor,
         actions: [
           // Mark all as read
           StreamBuilder<int>(

@@ -132,25 +132,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             color: Colors.red,
                           ),
                         ),
-                        if (dashboardProvider.unreadNoticeCount > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '${dashboardProvider.unreadNoticeCount} new',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${dashboardProvider.urgentNotices.length} new',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -481,11 +480,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Show notice details
   void _showNoticeDetails(BuildContext context, notice) {
-    // Mark notice as read
-    final dashboardProvider =
-        Provider.of<DashboardProvider>(context, listen: false);
-    dashboardProvider.markNoticeAsRead(notice.id);
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
