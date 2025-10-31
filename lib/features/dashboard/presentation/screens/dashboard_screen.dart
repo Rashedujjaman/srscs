@@ -460,7 +460,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // TODO: Open external link
+                      RouteManager().launchURL(news.externalLink!);
                     },
                     icon: const Icon(Icons.open_in_new),
                     label: const Text('Read More'),

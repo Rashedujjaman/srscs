@@ -13,6 +13,7 @@ import '../../services/auth_service.dart';
 import '../../services/notification_service.dart';
 import '../../core/constants/user_roles.dart';
 import 'app_routes.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RouteManager {
   static final RouteManager _instance = RouteManager._internal();
@@ -248,6 +249,12 @@ class RouteManager {
       default:
         return false;
     }
+  }
+
+  /// Launch external URL
+  Future<void> launchURL(String url) async {
+    final uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }
 
