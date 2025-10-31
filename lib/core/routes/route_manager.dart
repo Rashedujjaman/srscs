@@ -161,6 +161,7 @@ class RouteManager {
     }
 
     await _auth.signOut();
+    if (!context.mounted) return;
     Navigator.pushNamedAndRemoveUntil(
       context,
       AppRoutes.login,

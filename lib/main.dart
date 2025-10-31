@@ -92,6 +92,9 @@ import 'features/contractor/presentation/screens/contractor_completed_tasks_scre
 // Theme
 import 'core/theme/app_theme_provider.dart';
 
+// Notifications
+import 'services/notification_service.dart';
+
 // ONE-TIME DATABASE SEEDER (uncomment to run once, then comment out again)
 // import 'features/dashboard/data/datasources/seed_dashboard_data.dart';
 
@@ -100,6 +103,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  final notificationService = NotificationService();
+  await notificationService.initialize();
 
   // 🔥 Configure Firebase Realtime Database
   FirebaseDatabase.instance.databaseURL =

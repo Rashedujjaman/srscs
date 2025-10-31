@@ -121,7 +121,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       _showMessage("Login Successful as $roleText");
-      await Future.delayed(const Duration(seconds: 1));
 
       // Initialize FCM token after successful login
       try {

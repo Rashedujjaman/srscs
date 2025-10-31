@@ -8,11 +8,11 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:srscs/core/constants/user_roles.dart';
 import 'package:srscs/core/routes/app_routes.dart';
+import 'package:srscs/core/routes/route_manager.dart';
 import 'package:srscs/core/theme/app_theme_provider.dart';
 import 'package:srscs/features/complaint/data/models/complaint_model.dart';
 import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
 import 'package:srscs/services/auth_service.dart';
-import '../../../../services/notification_service.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../providers/profile_provider.dart';
 import 'edit_profile_screen.dart';
@@ -481,16 +481,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
               if (confirm == true) {
-                try {
-                  // Delete FCM token from current device before logout
-                  await NotificationService().deleteToken();
-                  print('✅ FCM token deleted on logout');
-                } catch (e) {
-                  print('⚠️ Error deleting FCM token on logout: $e');
+                if (mounted) {
+                  await RouteManager().logout(context);
+                  // Get.offAllNamed(AppRoutes.login);
                 }
-
-                await FirebaseAuth.instance.signOut();
-                Get.offAllNamed(AppRoutes.login);
               }
             },
           ),
