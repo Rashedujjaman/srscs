@@ -120,116 +120,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 24),
 
                   // Urgent Notices Section
-                  if (dashboardProvider.urgentNotices.isNotEmpty) ...[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          '⚠️ Urgent Notices',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${dashboardProvider.urgentNotices.length} new',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ...dashboardProvider.urgentNotices.map(
-                      (notice) => NoticeCard(
-                        notice: notice,
-                        onTap: () => _showNoticeDetails(context, notice),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                  if (dashboardProvider.urgentNotices.isNotEmpty)
+                    _buildUrgentNoticesSection(dashboardProvider.urgentNotices),
+
+                  const SizedBox(height: 24),
 
                   // News Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Latest News',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (newsList.isNotEmpty)
-                        TextButton(
-                          onPressed: () => _showAllNews(context, newsList),
-                          child: const Text('View All'),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  if (dashboardProvider.isLoadingNews)
-                    const Center(child: CircularProgressIndicator())
-                  else if (newsList.isEmpty)
-                    _buildEmptyState(
-                        'No news available', Icons.article_outlined)
-                  else
-                    ...newsList.take(3).map(
-                          (news) => NewsCard(
-                            news: news,
-                            onTap: () => _showNewsDetails(context, news),
-                          ),
-                        ),
+                  if (newsList.isNotEmpty) _buildNewsSection(newsList),
 
                   const SizedBox(height: 24),
 
                   // All Notices Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'All Notices',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (noticesList.isNotEmpty)
-                        TextButton(
-                          onPressed: () =>
-                              _showAllNotices(context, noticesList),
-                          child: const Text('View All'),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  if (dashboardProvider.isLoadingNotices)
-                    const Center(child: CircularProgressIndicator())
-                  else if (noticesList.isEmpty)
-                    _buildEmptyState(
-                        'No notices available', Icons.notifications_none)
-                  else
-                    ...noticesList.take(3).map(
-                          (notice) => NoticeCard(
-                            notice: notice,
-                            onTap: () => _showNoticeDetails(context, notice),
-                          ),
-                        ),
+                  if (noticesList.isNotEmpty) _buildNoticeSection(noticesList),
 
                   const SizedBox(height: 80), // Space for FAB
                 ],
@@ -376,6 +278,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // Build news section
+  Widget _buildNewsSection(List newsList) {
+    return Column(children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Latest News',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (newsList.isNotEmpty)
+            TextButton(
+              onPressed: () => _showAllNews(context, newsList),
+              child: const Text('View All'),
+            ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      if (newsList.isEmpty)
+        _buildEmptyState('No news available', Icons.article_outlined)
+      else
+        ...newsList.take(3).map(
+              (news) => NewsCard(
+                news: news,
+                onTap: () => _showNewsDetails(context, news),
+              ),
+            ),
+    ]);
+  }
+
   // Show news details
   void _showNewsDetails(BuildContext context, news) {
     showModalBottomSheet(
@@ -476,6 +411,83 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
+  }
+
+  // Build urgent notices section
+  Widget _buildUrgentNoticesSection(List urgentNotices) {
+    return Column(children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            '⚠️ Urgent Notices',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '${urgentNotices.length} new',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      ...urgentNotices.map(
+        (notice) => NoticeCard(
+          notice: notice,
+          onTap: () => _showNoticeDetails(context, notice),
+        ),
+      ),
+    ]);
+  }
+
+  // Build notice section
+  Widget _buildNoticeSection(List noticesList) {
+    return Column(children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'All Notices',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (noticesList.isNotEmpty)
+            TextButton(
+              onPressed: () => _showAllNotices(context, noticesList),
+              child: const Text('View All'),
+            ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      if (noticesList.isEmpty)
+        _buildEmptyState('No notices available', Icons.notifications_none)
+      else
+        ...noticesList.take(3).map(
+              (notice) => NoticeCard(
+                notice: notice,
+                onTap: () => _showNoticeDetails(context, notice),
+              ),
+            ),
+    ]);
   }
 
   // Show notice details
