@@ -108,7 +108,7 @@ class _ComplaintTrackingScreenState extends State<ComplaintTrackingScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      complaint.typeText,
+                      complaint.type.displayName,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

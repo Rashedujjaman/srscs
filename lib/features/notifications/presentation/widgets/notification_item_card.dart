@@ -51,7 +51,7 @@ class NotificationItemCard extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: _getIconBackgroundColor().withOpacity(0.1),
+                    color: _getIconBackgroundColor().withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

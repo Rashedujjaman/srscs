@@ -23,7 +23,7 @@ class AppThemeProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   /// Get lighter shade of primary color (for backgrounds)
-  Color get primaryColorLight => _primaryColor.withOpacity(0.1);
+  Color get primaryColorLight => _primaryColor.withValues(alpha: 0.1);
 
   /// Get darker shade of primary color (for hover states)
   Color get primaryColorDark => Color.lerp(_primaryColor, Colors.black, 0.2)!;

@@ -32,7 +32,8 @@ class NewsCard extends StatelessWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: _getPriorityColor(news.priority).withOpacity(0.1),
+                  color:
+                      _getPriorityColor(news.priority).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(

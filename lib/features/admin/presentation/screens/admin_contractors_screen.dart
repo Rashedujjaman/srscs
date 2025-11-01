@@ -196,7 +196,8 @@ class _AdminContractorsScreenState extends State<AdminContractorsScreen> {
             _filterArea = area;
           });
         },
-        selectedColor: UserRoleExtension(UserRole.admin).color.withOpacity(0.3),
+        selectedColor:
+            UserRoleExtension(UserRole.admin).color.withValues(alpha: 0.3),
         checkmarkColor: UserRoleExtension(UserRole.admin).color,
       ),
     );

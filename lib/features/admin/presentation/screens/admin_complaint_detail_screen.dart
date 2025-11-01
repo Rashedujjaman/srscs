@@ -175,7 +175,7 @@ class _AdminComplaintDetailScreenState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: adminColor.withOpacity(0.1),
+        color: adminColor.withValues(alpha: 0.1),
         border: Border(
           bottom: BorderSide(color: Colors.grey[300]!),
         ),
@@ -189,7 +189,8 @@ class _AdminComplaintDetailScreenState
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(complaint.status).withOpacity(0.2),
+                  color:
+                      _getStatusColor(complaint.status).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: _getStatusColor(complaint.status)),
                 ),
@@ -420,7 +421,7 @@ class _AdminComplaintDetailScreenState
                     left: 0,
                     right: 0,
                     child: Container(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 4,
                         vertical: 2,
@@ -509,7 +510,7 @@ class _AdminComplaintDetailScreenState
                     _updateStatus(complaint.id, status);
                   }
                 },
-                selectedColor: _getStatusColor(status).withOpacity(0.3),
+                selectedColor: _getStatusColor(status).withValues(alpha: 0.3),
                 backgroundColor: Colors.grey[200],
                 labelStyle: TextStyle(
                   color: isSelected ? _getStatusColor(status) : Colors.black87,
@@ -781,7 +782,7 @@ class _AdminComplaintDetailScreenState
           .collection('complaints')
           .doc(complaintId)
           .update({
-        'status': status.toString().split('.').last,
+        'status': status.value,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 

@@ -9,6 +9,7 @@ class ProfileEntity {
   final String? dob;
   final String? profilePhotoUrl;
   final DateTime? updatedAt;
+  final String? role; // 'citizen', 'contractor', 'admin'
 
   ProfileEntity({
     required this.id,
@@ -21,5 +22,6 @@ class ProfileEntity {
     this.dob,
     this.profilePhotoUrl,
     this.updatedAt,
+    this.role,
   });
 }

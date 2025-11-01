@@ -65,7 +65,7 @@ class _ContractorCompletedTasksScreenState
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -116,7 +116,7 @@ class _ContractorCompletedTasksScreenState
             onDeleted: () {
               setState(() => _dateRange = null);
             },
-            backgroundColor: contractorColor.withOpacity(0.1),
+            backgroundColor: contractorColor.withValues(alpha: 0.1),
           ),
         ],
       ),
@@ -133,8 +133,7 @@ class _ContractorCompletedTasksScreenState
     Query query = _firestore
         .collection('complaints')
         .where('assignedTo', isEqualTo: userId)
-        .where('status',
-            isEqualTo: ComplaintStatus.resolved.toString().split('.').last)
+        .where('status', isEqualTo: ComplaintStatus.resolved.value)
         .orderBy('completedAt', descending: true);
 
     return StreamBuilder<QuerySnapshot>(
@@ -192,7 +191,9 @@ class _ContractorCompletedTasksScreenState
         if (_searchQuery.isNotEmpty) {
           complaints = complaints.where((complaint) {
             final searchLower = _searchQuery.toLowerCase();
-            return complaint.typeText.toLowerCase().contains(searchLower) ||
+            return complaint.type.displayName
+                    .toLowerCase()
+                    .contains(searchLower) ||
                 complaint.description.toLowerCase().contains(searchLower) ||
                 (complaint.area?.toLowerCase().contains(searchLower) ??
                     false) ||
@@ -270,9 +271,9 @@ class _ContractorCompletedTasksScreenState
     // Find most common type
     ComplaintType? mostCommonType;
     int maxCount = 0;
-    typeCount.forEach((type, count) {
-      if (count > maxCount) {
-        maxCount = count;
+    typeCount.forEach((type, i) {
+      if (i > maxCount) {
+        maxCount = i;
         mostCommonType = type;
       }
     });
@@ -288,7 +289,7 @@ class _ContractorCompletedTasksScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: contractorColor.withOpacity(0.1),
+        color: contractorColor.withValues(alpha: 0.1),
         border: Border(
           bottom: BorderSide(color: Colors.grey[300]!),
         ),
@@ -408,7 +409,7 @@ class _ContractorCompletedTasksScreenState
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
@@ -423,7 +424,7 @@ class _ContractorCompletedTasksScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          complaint.typeText,
+                          complaint.type.displayName,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

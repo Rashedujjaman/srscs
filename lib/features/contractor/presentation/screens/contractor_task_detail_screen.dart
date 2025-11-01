@@ -132,7 +132,7 @@ class _ContractorTaskDetailScreenState
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [contractorColor, contractorColor.withOpacity(0.7)],
+          colors: [contractorColor, contractorColor.withValues(alpha: 0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -150,7 +150,7 @@ class _ContractorTaskDetailScreenState
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  complaint.statusText,
+                  complaint.status.displayName,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -192,7 +192,7 @@ class _ContractorTaskDetailScreenState
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  complaint.typeText,
+                  complaint.type.displayName,
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -207,7 +207,7 @@ class _ContractorTaskDetailScreenState
             'Assigned ${_formatDate(complaint.assignedAt ?? complaint.createdAt)}',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
         ],
@@ -438,7 +438,7 @@ class _ContractorTaskDetailScreenState
                     left: 0,
                     right: 0,
                     child: Container(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 4,
                         vertical: 2,
@@ -626,23 +626,27 @@ class _ContractorTaskDetailScreenState
 
     try {
       await _firestore.collection('complaints').doc(complaintId).update({
-        'status': ComplaintStatus.inProgress.toString().split('.').last,
+        'status': ComplaintStatus.inProgress.value,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Work started successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Work started successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       setState(() => _isUpdating = false);
     }
@@ -763,7 +767,7 @@ class _ContractorTaskDetailScreenState
 
     try {
       await _firestore.collection('complaints').doc(complaintId).update({
-        'status': ComplaintStatus.resolved.toString().split('.').last,
+        'status': ComplaintStatus.resolved.value,
         'completedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });

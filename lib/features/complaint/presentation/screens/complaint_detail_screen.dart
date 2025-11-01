@@ -239,9 +239,10 @@ class _ComplaintDetailScreenState extends State<ComplaintDetailScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
+        color: statusColor.withValues(alpha: 0.1),
         border: Border(
-          bottom: BorderSide(color: statusColor.withOpacity(0.3), width: 2),
+          bottom:
+              BorderSide(color: statusColor.withValues(alpha: 0.3), width: 2),
         ),
       ),
       child: Row(
@@ -275,7 +276,7 @@ class _ComplaintDetailScreenState extends State<ComplaintDetailScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                complaint.typeText,
+                complaint.type.displayName,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -398,7 +399,7 @@ class _ComplaintDetailScreenState extends State<ComplaintDetailScreen> {
                   left: 0,
                   right: 0,
                   child: Container(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4,
                       vertical: 2,

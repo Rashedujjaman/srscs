@@ -156,8 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         final theme = Provider.of<AppThemeProvider>(context, listen: false);
         theme.setThemeForRole(userRole);
-        final dashboardRoute =
-            AppRoutes.getInitialRoute(userRole.toString().split('.').last);
+        final dashboardRoute = AppRoutes.getInitialRoute(userRole.value);
         Get.offAllNamed(dashboardRoute);
       }
     } on FirebaseAuthException catch (e) {

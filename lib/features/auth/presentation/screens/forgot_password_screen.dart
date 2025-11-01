@@ -124,7 +124,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       // Email not found in any collection
       return false;
     } catch (e) {
-      print('Error checking email existence: $e');
       // Return true to allow Firebase Auth to handle the error
       return true;
     }

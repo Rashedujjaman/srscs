@@ -139,7 +139,7 @@ class _AdminContractorDetailScreenState
         gradient: LinearGradient(
           colors: [
             UserRoleExtension(UserRole.admin).color,
-            UserRoleExtension(UserRole.admin).color.withOpacity(0.7),
+            UserRoleExtension(UserRole.admin).color.withValues(alpha: 0.7),
           ],
         ),
       ),

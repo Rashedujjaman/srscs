@@ -168,7 +168,7 @@ class RoleHelper {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: role.color.withOpacity(0.1),
+        color: role.color.withValues(alpha: 0.1),
         border: Border.all(color: role.color),
         borderRadius: BorderRadius.circular(12),
       ),

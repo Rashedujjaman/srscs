@@ -122,7 +122,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           gradient: LinearGradient(
             colors: [
               UserRoleExtension(UserRole.admin).color,
-              UserRoleExtension(UserRole.admin).color.withOpacity(0.7),
+              UserRoleExtension(UserRole.admin).color.withValues(alpha: 0.7),
             ],
           ),
           borderRadius: BorderRadius.circular(12),
@@ -153,7 +153,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     'System Management Dashboard',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                 ],
@@ -291,12 +291,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+            colors: [
+              color.withValues(alpha: 0.1),
+              color.withValues(alpha: 0.05)
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -315,7 +318,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               label,
               style: TextStyle(
                 fontSize: 13,
-                color: color.withOpacity(0.8),
+                color: color.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
@@ -332,7 +335,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       elevation: 2,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.1),
+          backgroundColor: color.withValues(alpha: 0.1),
           child: Icon(icon, color: color),
         ),
         title: Text(
@@ -477,23 +480,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildComplaintCard(ComplaintEntity complaint) {
-    final status = complaint.status;
-    final color = _getStatusColor(status.toString().split('.').last);
+    final color = complaint.status.color;
     final createdAt = complaint.createdAt;
+    final icon = complaint.status.icon;
+    final value = complaint.status.value;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           child: Icon(
-            _getStatusIcon(status.toString().split('.').last),
+            icon,
             color: color,
             size: 20,
           ),
         ),
         title: Text(
-          complaint.type.toString().split('.').last,
+          complaint.type.value,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
@@ -536,7 +540,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            _getStatusText(status.toString().split('.').last),
+            value,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 10,
@@ -549,57 +553,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         },
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return Colors.orange;
-      case 'underReview':
-        return Colors.blue;
-      case 'inProgress':
-        return Colors.purple;
-      case 'resolved':
-        return Colors.green;
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData _getStatusIcon(String status) {
-    switch (status) {
-      case 'pending':
-        return Icons.hourglass_empty;
-      case 'underReview':
-        return Icons.search;
-      case 'inProgress':
-        return Icons.trending_up;
-      case 'resolved':
-        return Icons.check_circle;
-      case 'rejected':
-        return Icons.cancel;
-      default:
-        return Icons.help;
-    }
-  }
-
-  String _getStatusText(String status) {
-    switch (status) {
-      case 'pending':
-        return 'Pending';
-      case 'underReview':
-        return 'Under Review';
-      case 'inProgress':
-        return 'In Progress';
-      case 'resolved':
-        return 'Resolved';
-      case 'rejected':
-        return 'Rejected';
-      default:
-        return status;
-    }
   }
 
   Widget _buildBottomNav() {

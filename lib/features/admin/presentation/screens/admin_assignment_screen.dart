@@ -118,7 +118,7 @@ class _AdminAssignmentScreenState extends State<AdminAssignmentScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: adminColor.withOpacity(0.1),
+        color: adminColor.withValues(alpha: 0.1),
         border: Border(
           bottom: BorderSide(color: Colors.grey[300]!),
         ),
@@ -362,7 +362,9 @@ class _AdminAssignmentScreenState extends State<AdminAssignmentScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isAssigned ? Colors.grey[300]! : statusColor.withOpacity(0.3),
+          color: isAssigned
+              ? Colors.grey[300]!
+              : statusColor.withValues(alpha: 0.3),
           width: isAssigned ? 1 : 2,
         ),
       ),
@@ -385,7 +387,7 @@ class _AdminAssignmentScreenState extends State<AdminAssignmentScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.2),
+                      color: statusColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(color: statusColor),
                     ),

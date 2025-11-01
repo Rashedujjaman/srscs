@@ -13,6 +13,7 @@ class ProfileModel extends ProfileEntity {
     super.dob,
     super.profilePhotoUrl,
     super.updatedAt,
+    super.role,
   });
 
   factory ProfileModel.fromFirestore(DocumentSnapshot doc) {
@@ -31,6 +32,7 @@ class ProfileModel extends ProfileEntity {
       updatedAt: data['updatedAt'] is Timestamp
           ? (data['updatedAt'] as Timestamp).toDate()
           : null,
+      role: data['role'] ?? 'citizen',
     );
   }
 
@@ -45,6 +47,7 @@ class ProfileModel extends ProfileEntity {
       'dob': dob,
       'imageUrl': profilePhotoUrl,
       'updatedAt': FieldValue.serverTimestamp(),
+      'role': role,
     };
   }
 
@@ -60,6 +63,7 @@ class ProfileModel extends ProfileEntity {
       dob: entity.dob,
       profilePhotoUrl: entity.profilePhotoUrl,
       updatedAt: entity.updatedAt,
+      role: entity.role,
     );
   }
 
@@ -74,6 +78,7 @@ class ProfileModel extends ProfileEntity {
     String? dob,
     String? profilePhotoUrl,
     DateTime? updatedAt,
+    String? role,
   }) {
     return ProfileModel(
       id: id ?? this.id,
@@ -86,6 +91,7 @@ class ProfileModel extends ProfileEntity {
       dob: dob ?? this.dob,
       profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       updatedAt: updatedAt ?? this.updatedAt,
+      role: role ?? this.role,
     );
   }
 }

@@ -101,7 +101,7 @@ class ComplaintRemoteDataSource {
   }) async {
     try {
       await firestore.collection('complaints').doc(complaintId).update({
-        'status': status.toString().split('.').last,
+        'status': status.value,
         'updatedAt': Timestamp.now(),
         if (adminNotes != null) 'adminNotes': adminNotes,
         if (assignedTo != null) 'assignedTo': assignedTo,

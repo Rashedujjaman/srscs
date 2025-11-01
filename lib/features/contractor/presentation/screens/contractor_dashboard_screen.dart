@@ -115,12 +115,12 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
               // Row(
               //   children: [
               //     Icon(Icons.work_outline,
-              //         size: 16, color: Colors.white.withOpacity(0.9)),
+              //         size: 16, color: Colors.white.withValues(alpha: 0.9)),
               //     const SizedBox(width: 6),
               // Text(
               //   specialization,
               //   style: TextStyle(
-              //     color: Colors.white.withOpacity(0.9),
+              //     color: Colors.white.withValues(alpha: 0.9),
               //     fontSize: 14,
               //   ),
               // ),
@@ -381,7 +381,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
                       border: Border.all(color: statusColor),
                     ),
                     child: Text(
-                      complaint.statusText,
+                      complaint.status.displayName,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -392,7 +392,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      complaint.typeText,
+                      complaint.type.displayName,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

@@ -28,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<ComplaintEntity> _recentComplaints = [];
   String? userEmail;
+  UserRole? userRole;
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final profileProvider = context.read<ProfileProvider>();
       profileProvider.loadProfile();
       userEmail = profileProvider.profile?.email;
+      userRole = parseUserRole(profileProvider.profile?.role);
 
       _loadComplaints();
     });
@@ -160,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           border: Border.all(color: Colors.white, width: 4),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -192,7 +194,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                 ),
                               ],
@@ -218,7 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     profile.email,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                 ],
@@ -297,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -339,7 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -367,6 +369,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildInfoTile(Icons.cake, 'Date of Birth', profile.dob),
           if (profile.bloodGroup != null)
             _buildInfoTile(Icons.bloodtype, 'Blood Group', profile.bloodGroup),
+          if (userRole != null)
+            _buildInfoTile(
+                Icons.security, 'Role', userRole!.displayName.toUpperCase()),
         ],
       ),
     );
@@ -424,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -441,15 +446,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: theme.primaryColor,
             ),
           ),
-          const SizedBox(height: 16),
-          _buildActionButton(
-            icon: Icons.chat_bubble_outline,
-            label: 'Chat with Admin',
-            color: Colors.blue,
-            onTap: () {
-              Get.toNamed(AppRoutes.citizenChat);
-            },
-          ),
+          if (userRole == UserRole.citizen) ...[
+            const SizedBox(height: 16),
+            _buildActionButton(
+              icon: Icons.chat_bubble_outline,
+              label: 'Chat with Admin',
+              color: Colors.blue,
+              onTap: () {
+                Get.toNamed(AppRoutes.citizenChat);
+              },
+            ),
+          ],
           const SizedBox(height: 12),
           _buildActionButton(
             icon: Icons.history,
@@ -517,9 +524,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -553,7 +560,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -584,7 +591,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -630,7 +637,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: theme.primaryColor.withOpacity(0.1),
+                      color: theme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
@@ -645,7 +652,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          complaint.typeText,
+                          complaint.type.displayName,
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -671,7 +678,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      complaint.statusText,
+                      complaint.status.displayName,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -780,15 +787,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Color _getStatusColor(ComplaintStatus status) {
     switch (status) {
       case ComplaintStatus.pending:
-        return Colors.orange.withOpacity(0.2);
+        return Colors.orange.withValues(alpha: 0.2);
       case ComplaintStatus.underReview:
-        return Colors.blue.withOpacity(0.2);
+        return Colors.blue.withValues(alpha: 0.2);
       case ComplaintStatus.inProgress:
-        return Colors.purple.withOpacity(0.2);
+        return Colors.purple.withValues(alpha: 0.2);
       case ComplaintStatus.resolved:
-        return Colors.green.withOpacity(0.2);
+        return Colors.green.withValues(alpha: 0.2);
       case ComplaintStatus.rejected:
-        return Colors.red.withOpacity(0.2);
+        return Colors.red.withValues(alpha: 0.2);
     }
   }
 }

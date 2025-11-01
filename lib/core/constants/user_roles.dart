@@ -5,7 +5,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
 
 /// Available user roles in the system
 enum UserRole {
@@ -190,52 +189,5 @@ class AvailableAreas {
   /// Check if area is valid
   static bool isValidArea(String area) {
     return areas.contains(area);
-  }
-}
-
-extension ComplaintStatusExtension on ComplaintStatus {
-  String get displayName {
-    switch (this) {
-      case ComplaintStatus.pending:
-        return 'Pending';
-      case ComplaintStatus.underReview:
-        return 'Under Review';
-      case ComplaintStatus.inProgress:
-        return 'In Progress';
-      case ComplaintStatus.resolved:
-        return 'Resolved';
-      case ComplaintStatus.rejected:
-        return 'Rejected';
-    }
-  }
-
-  Color get color {
-    switch (this) {
-      case ComplaintStatus.pending:
-        return Colors.orange;
-      case ComplaintStatus.underReview:
-        return Colors.blue;
-      case ComplaintStatus.inProgress:
-        return Colors.purple;
-      case ComplaintStatus.resolved:
-        return Colors.green;
-      case ComplaintStatus.rejected:
-        return Colors.red;
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case ComplaintStatus.pending:
-        return Icons.pending;
-      case ComplaintStatus.underReview:
-        return Icons.rate_review;
-      case ComplaintStatus.inProgress:
-        return Icons.construction;
-      case ComplaintStatus.resolved:
-        return Icons.check_circle;
-      case ComplaintStatus.rejected:
-        return Icons.cancel;
-    }
   }
 }

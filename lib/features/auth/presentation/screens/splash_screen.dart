@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:srscs/core/constants/user_roles.dart';
 import 'package:srscs/core/theme/app_theme_provider.dart';
 import '../../../../services/auth_service.dart';
 import '../../../../services/notification_service.dart';
@@ -59,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       // Navigate to role-specific dashboard
       final dashboardRoute = AppRoutes.getInitialRoute(
-        userRole.toString().split('.').last,
+        userRole.value,
       );
       Get.offAllNamed(dashboardRoute);
     } catch (e) {

@@ -66,7 +66,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: adminColor.withOpacity(0.1),
+        color: adminColor.withValues(alpha: 0.1),
         border: Border(
           bottom: BorderSide(color: Colors.grey[300]!),
         ),
@@ -274,7 +274,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: statusColor.withOpacity(0.3), width: 1),
+        side: BorderSide(color: statusColor.withValues(alpha: 0.3), width: 1),
       ),
       child: InkWell(
         onTap: () {
@@ -296,7 +296,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.2),
+                      color: statusColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: statusColor),
                     ),

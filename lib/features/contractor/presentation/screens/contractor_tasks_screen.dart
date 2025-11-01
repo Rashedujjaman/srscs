@@ -84,8 +84,7 @@ class _ContractorTasksScreenState extends State<ContractorTasksScreen>
 
     // Only add status filter for specific tabs (Pending/In Progress)
     if (statusFilter != null) {
-      query = query.where('status',
-          isEqualTo: statusFilter.toString().split('.').last);
+      query = query.where('status', isEqualTo: statusFilter.value);
     }
     // For "All" tab, we'll filter client-side to avoid Firestore index issues
 
@@ -206,7 +205,7 @@ class _ContractorTasksScreenState extends State<ContractorTasksScreen>
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: statusColor.withOpacity(0.3),
+          color: statusColor.withValues(alpha: 0.3),
           width: isUrgent ? 2 : 1,
         ),
       ),
@@ -230,7 +229,7 @@ class _ContractorTasksScreenState extends State<ContractorTasksScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.2),
+                      color: statusColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: statusColor),
                     ),
@@ -279,7 +278,7 @@ class _ContractorTasksScreenState extends State<ContractorTasksScreen>
 
               // Type
               Text(
-                complaint.typeText,
+                complaint.type.displayName,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -385,7 +384,7 @@ class _ContractorTasksScreenState extends State<ContractorTasksScreen>
   Future<void> _startWork(String complaintId) async {
     try {
       await _firestore.collection('complaints').doc(complaintId).update({
-        'status': ComplaintStatus.inProgress.toString().split('.').last,
+        'status': ComplaintStatus.inProgress.value,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
