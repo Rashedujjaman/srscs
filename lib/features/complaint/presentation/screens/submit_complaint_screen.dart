@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -228,6 +229,12 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
       return;
     }
 
+    final userName = await FirebaseFirestore.instance
+        .collection('citizens')
+        .doc(user.uid)
+        .get()
+        .then((doc) => doc.data()?['fullName'] ?? user.email ?? 'User');
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -235,7 +242,7 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
 
       final complaintId = await provider.submitComplaint(
         userId: user.uid,
-        userName: user.displayName ?? user.email ?? 'User',
+        userName: userName,
         type: _selectedType,
         description: _descriptionCtrl.text.trim(),
         mediaFiles: _selectedFiles.map((f) => f.path).toList(),
