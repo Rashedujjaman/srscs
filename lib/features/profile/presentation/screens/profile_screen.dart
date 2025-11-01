@@ -27,6 +27,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<ComplaintEntity> _recentComplaints = [];
+  String? userEmail;
 
   @override
   void initState() {
@@ -35,6 +36,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final profileProvider = context.read<ProfileProvider>();
       profileProvider.loadProfile();
+      userEmail = profileProvider.profile?.email;
+
       _loadComplaints();
     });
   }
@@ -454,6 +457,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.orange,
             onTap: () {
               Get.toNamed(AppRoutes.trackComplaints);
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildActionButton(
+            icon: Icons.lock_reset,
+            label: 'Reset Password',
+            color: Colors.green,
+            onTap: () {
+              Get.toNamed(AppRoutes.forgotPassword, arguments: userEmail);
             },
           ),
           const SizedBox(height: 12),
