@@ -56,15 +56,15 @@ class AppRoutes {
 
   /// Check if route requires authentication
   static bool requiresAuth(String route) {
-    return route != login && route != register && route != forgotPassword;
+    return route != login &&
+        route != register &&
+        route != forgotPassword &&
+        route != nidVerification;
   }
 
   /// Check if route is accessible by role
   static bool isAccessibleByRole(String route, String role) {
     final roleLower = role.toLowerCase();
-
-    // Admin can access all routes
-    if (roleLower == 'admin') return true;
 
     // Contractor routes
     if (route.startsWith('/contractor')) {

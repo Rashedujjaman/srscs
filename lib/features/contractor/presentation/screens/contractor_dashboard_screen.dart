@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:srscs/features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/routes/route_manager.dart';
 import '../../../../core/constants/user_roles.dart';
@@ -26,6 +27,7 @@ class ContractorDashboardScreen extends StatefulWidget {
 class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
   final _firestore = FirebaseFirestore.instance;
   final contractorColor = UserRoleExtension(UserRole.contractor).color;
+  final notificationRepository = NotificationRepositoryImpl();
 
   @override
   Widget build(BuildContext context) {
@@ -38,23 +40,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Contractor Dashboard'),
-        backgroundColor: contractorColor,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Navigate to notifications
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => RouteManager().logout(context),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(userId),
       body: RefreshIndicator(
         onRefresh: () async {
           setState(() {});
@@ -71,6 +57,61 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> {
         ),
       ),
       bottomNavigationBar: _buildBottomNav(context),
+    );
+  }
+
+  AppBar _buildAppBar(String? userId) {
+    return AppBar(
+      title: const Text('Contractor Dashboard'),
+      backgroundColor: contractorColor,
+      elevation: 0,
+      actions: [
+        if (userId != null)
+          StreamBuilder<int>(
+            stream: notificationRepository.unreadCountStream(userId),
+            builder: (context, snapshot) {
+              final unreadCount = snapshot.data ?? 0;
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.notifications_none,
+                      color: Colors.black87,
+                    ),
+                    onPressed: () {
+                      Get.toNamed(AppRoutes.notifications);
+                    },
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          unreadCount > 99 ? '99+' : '$unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+      ],
     );
   }
 

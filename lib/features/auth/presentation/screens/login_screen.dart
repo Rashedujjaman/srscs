@@ -95,11 +95,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (userRole == null) {
         // User authenticated but no role found in any collection
-        try {
-          await NotificationService().deleteToken();
-        } catch (e) {
-          print('⚠️ Error deleting FCM token: $e');
-        }
+
+        await NotificationService().deleteToken();
+
         await FirebaseAuth.instance.signOut();
         _showError("Account not found. Please contact administrator.");
         setState(() => _isLoading = false);
@@ -123,33 +121,24 @@ class _LoginScreenState extends State<LoginScreen> {
       _showMessage("Login Successful as $roleText");
 
       // Initialize FCM token after successful login
-      try {
-        final notificationService = NotificationService();
-        await notificationService.initialize();
+      final notificationService = NotificationService();
+      await notificationService.initialize();
 
-        // Subscribe to common topics (all users)
-        await notificationService.subscribeToTopic('all_users');
-        await notificationService.subscribeToTopic('urgent_notices');
+      // Subscribe to common topics (all users)
+      await notificationService.subscribeToTopic('all_users');
+      await notificationService.subscribeToTopic('urgent_notices');
 
-        // Subscribe to role-specific topics
-        switch (userRole) {
-          case UserRole.citizen:
-            await notificationService.subscribeToTopic('citizen_updates');
-            print('✅ Subscribed to citizen_updates topic');
-            break;
-          case UserRole.contractor:
-            await notificationService.subscribeToTopic('contractor_updates');
-            print('✅ Subscribed to contractor_updates topic');
-            break;
-          case UserRole.admin:
-            await notificationService.subscribeToTopic('admin_updates');
-            print('✅ Subscribed to admin_updates topic');
-            break;
-        }
-
-        print('✅ FCM token registered and topics subscribed after login');
-      } catch (e) {
-        print('⚠️ Error initializing FCM token: $e');
+      // Subscribe to role-specific topics
+      switch (userRole) {
+        case UserRole.citizen:
+          await notificationService.subscribeToTopic('citizen_updates');
+          break;
+        case UserRole.contractor:
+          await notificationService.subscribeToTopic('contractor_updates');
+          break;
+        case UserRole.admin:
+          await notificationService.subscribeToTopic('admin_updates');
+          break;
       }
 
       // Navigate to role-specific dashboard

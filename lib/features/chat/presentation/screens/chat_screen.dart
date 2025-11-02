@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:srscs/core/constants/user_roles.dart';
 import 'package:srscs/core/theme/app_theme_provider.dart';
 import 'package:srscs/services/auth_service.dart';
@@ -76,8 +77,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     // Only set viewing status if chat has messages
     // This prevents creating phantom chats for users who haven't sent any messages yet
     if (!_hasChatMessages) {
-      print(
-          '📱 Skipping viewing status - no messages in chat yet (isViewing: $isViewing)');
       return;
     }
 
@@ -88,17 +87,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           'isViewing': true,
           'lastSeen': ServerValue.timestamp,
         });
-        print('📱 Chat viewing status set: true (${_userRole?.toString()})');
       } else {
         // Clear viewing status when leaving chat
         await _chatStatusRef!.set({
           'isViewing': false,
           'lastSeen': ServerValue.timestamp,
         });
-        print('📱 Chat viewing status set: false (${_userRole?.toString()})');
       }
     } catch (e) {
-      print('❌ Error setting chat viewing status: $e');
+      rethrow;
     }
   }
 
@@ -697,17 +694,113 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
-  void _openFile(String fileUrl) {
-    // Open file in browser or external app
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening file...'),
-        action: SnackBarAction(
-          label: 'Open',
-          onPressed: () {
-            // TODO: Use url_launcher to open the file
-          },
+  void _openFile(String fileUrl) async {
+    try {
+      final uri = Uri.parse(fileUrl);
+
+      // Try to launch the URL
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        // If can't launch directly, show dialog with options
+        if (!mounted) return;
+        _showFileOpenDialog(fileUrl);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to open file: $e'),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Copy Link',
+            textColor: Colors.white,
+            onPressed: () {
+              _copyToClipboard(fileUrl);
+            },
+          ),
         ),
+      );
+    }
+  }
+
+  void _showFileOpenDialog(String fileUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Open File'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Choose how to open this file:'),
+            const SizedBox(height: 16),
+            Text(
+              'File URL:',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              fileUrl,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey[700],
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _copyToClipboard(fileUrl);
+            },
+            child: const Text('Copy Link'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final uri = Uri.parse(fileUrl);
+              try {
+                await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                );
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to open file: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Open in Browser'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyToClipboard(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Link ready to share'),
+        duration: Duration(seconds: 2),
       ),
     );
   }

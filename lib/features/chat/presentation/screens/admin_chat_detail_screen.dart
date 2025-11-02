@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -7,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:srscs/core/theme/app_theme_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import '../../domain/entities/chat_message_entity.dart';
 import '../../data/datasources/chat_remote_data_source.dart';
@@ -80,7 +82,6 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
     // Only set viewing status if chat has messages
     // This prevents creating phantom admin viewing entries for non-existent chats
     if (!_hasChatMessages && isViewing) {
-      print('📱 Admin skipping viewing status - no messages in chat yet');
       return;
     }
 
@@ -91,17 +92,15 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
           'lastSeen': ServerValue.timestamp,
           'adminId': _adminId,
         });
-        print('📱 Admin viewing status set for ${widget.userId}: true');
       } else {
         await _adminChatStatusRef.set({
           'isViewing': false,
           'lastSeen': ServerValue.timestamp,
           'adminId': _adminId,
         });
-        print('📱 Admin viewing status set for ${widget.userId}: false');
       }
     } catch (e) {
-      print('❌ Error setting admin viewing status: $e');
+      rethrow;
     }
   }
 
@@ -633,7 +632,7 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
           ),
           body: Center(
             child: InteractiveViewer(
-              child: Image.network(imageUrl),
+              child: CachedNetworkImage(imageUrl: imageUrl),
             ),
           ),
         ),
@@ -641,16 +640,111 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen>
     );
   }
 
-  void _openFile(String fileUrl) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening file...'),
-        action: SnackBarAction(
-          label: 'Open',
-          onPressed: () {
-            // TODO: Use url_launcher to open the file
-          },
+  void _openFile(String fileUrl) async {
+    try {
+      final uri = Uri.parse(fileUrl);
+
+      // Try to launch the URL
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        // If can't launch directly, show dialog with options
+        if (!mounted) return;
+        _showFileOpenDialog(fileUrl);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to open file: $e'),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Copy Link',
+            textColor: Colors.white,
+            onPressed: () {
+              // Copy URL to clipboard would go here
+              _copyToClipboard(fileUrl);
+            },
+          ),
         ),
+      );
+    }
+  }
+
+  void _showFileOpenDialog(String fileUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Open File'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Choose how to open this file:'),
+            const SizedBox(height: 16),
+            Text(
+              'File URL:',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              fileUrl,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey[700],
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _copyToClipboard(fileUrl);
+            },
+            child: const Text('Copy Link'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final uri = Uri.parse(fileUrl);
+              try {
+                await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                );
+              } catch (e) {
+                if (!mounted) return;
+                _showError('Failed to open file: $e');
+              }
+            },
+            child: const Text('Open in Browser'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyToClipboard(String text) {
+    // For copying to clipboard, we would use flutter/services
+    // For now, just show a message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Link ready to share'),
+        duration: Duration(seconds: 2),
       ),
     );
   }

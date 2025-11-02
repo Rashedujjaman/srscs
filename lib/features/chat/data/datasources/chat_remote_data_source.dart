@@ -36,7 +36,7 @@ class ChatRemoteDataSource {
     await database.ref('chats/$userId').update({
       'lastMessage': message,
       'lastMessageTime': DateTime.now().millisecondsSinceEpoch,
-      'userName': userName,
+      if (userName != 'Admin') 'userName': userName,
     });
   }
 

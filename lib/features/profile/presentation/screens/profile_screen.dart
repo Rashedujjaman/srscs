@@ -500,10 +500,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
               if (confirm == true) {
-                if (mounted) {
-                  await RouteManager().logout(context);
-                  // Get.offAllNamed(AppRoutes.login);
-                }
+                await RouteManager().logout();
               }
             },
           ),

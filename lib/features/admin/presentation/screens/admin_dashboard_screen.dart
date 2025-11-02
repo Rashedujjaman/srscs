@@ -40,7 +40,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => RouteManager().logout(context),
+            onPressed: () => RouteManager().logout(),
           ),
         ],
       ),

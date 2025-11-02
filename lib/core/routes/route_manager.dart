@@ -13,6 +13,7 @@ import '../../services/auth_service.dart';
 import '../../services/notification_service.dart';
 import '../../core/constants/user_roles.dart';
 import 'app_routes.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class RouteManager {
@@ -48,25 +49,25 @@ class RouteManager {
 
       if (userRole == null) {
         // User role not found, logout
-        await _auth.signOut();
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
+        await logout();
+        Get.offAllNamed(AppRoutes.login);
         return;
       }
 
       if (!AppRoutes.isAccessibleByRole(route, userRole.value)) {
-        // Access denied, show error and navigate to appropriate dashboard
-        _showAccessDeniedDialog(context);
         final dashboardRoute = AppRoutes.getInitialRoute(userRole.value);
-        Navigator.pushReplacementNamed(context, dashboardRoute);
+        Get.offAllNamed(dashboardRoute);
+        // Access denied, show error and navigate to appropriate dashboard
+        _showAccessDeniedDialog();
         return;
       }
     }
 
     // Navigate to route
     if (arguments != null) {
-      Navigator.pushNamed(context, route, arguments: arguments);
+      Get.toNamed(route, arguments: arguments);
     } else {
-      Navigator.pushNamed(context, route);
+      Get.toNamed(route);
     }
   }
 
@@ -88,31 +89,31 @@ class RouteManager {
       final userRole = await _authService.getUserRole(userId);
 
       if (userRole == null) {
-        await _auth.signOut();
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
+        await logout();
+        Get.toNamed(AppRoutes.login);
         return;
       }
 
       if (!AppRoutes.isAccessibleByRole(route, userRole.value)) {
-        _showAccessDeniedDialog(context);
+        _showAccessDeniedDialog();
         final dashboardRoute = AppRoutes.getInitialRoute(userRole.value);
-        Navigator.pushReplacementNamed(context, dashboardRoute);
+        Get.toNamed(dashboardRoute);
         return;
       }
     }
 
     // Navigate to route
     if (arguments != null) {
-      Navigator.pushReplacementNamed(context, route, arguments: arguments);
+      Get.toNamed(route, arguments: arguments);
     } else {
-      Navigator.pushReplacementNamed(context, route);
+      Get.toNamed(route);
     }
   }
 
   /// Navigate to role-specific dashboard
   Future<void> navigateToDashboard(BuildContext context) async {
     if (!isAuthenticated) {
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      Get.offAllNamed(AppRoutes.login);
       return;
     }
 
@@ -121,12 +122,12 @@ class RouteManager {
 
     if (userRole == null) {
       await _auth.signOut();
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      Get.offAllNamed(AppRoutes.login);
       return;
     }
 
     final dashboardRoute = AppRoutes.getInitialRoute(userRole.value);
-    Navigator.pushReplacementNamed(context, dashboardRoute);
+    Get.offAllNamed(dashboardRoute);
   }
 
   /// Get navigation items for current user
@@ -142,37 +143,27 @@ class RouteManager {
   }
 
   /// Logout and navigate to login
-  Future<void> logout(BuildContext context) async {
-    try {
-      final notificationService = NotificationService();
+  Future<void> logout() async {
+    final notificationService = NotificationService();
 
-      // Unsubscribe from all topics
-      await notificationService.unsubscribeFromTopic('all_users');
-      await notificationService.unsubscribeFromTopic('urgent_notices');
-      await notificationService.unsubscribeFromTopic('citizen_updates');
-      await notificationService.unsubscribeFromTopic('contractor_updates');
-      await notificationService.unsubscribeFromTopic('admin_updates');
+    // Unsubscribe from all topics
+    await notificationService.unsubscribeFromTopic('all_users');
+    await notificationService.unsubscribeFromTopic('urgent_notices');
+    await notificationService.unsubscribeFromTopic('citizen_updates');
+    await notificationService.unsubscribeFromTopic('contractor_updates');
+    await notificationService.unsubscribeFromTopic('admin_updates');
 
-      // Delete FCM token from current device
-      await notificationService.deleteToken();
-      print('✅ FCM token deleted and topics unsubscribed on logout');
-    } catch (e) {
-      print('⚠️ Error cleaning up notifications on logout: $e');
-    }
+    // Delete FCM token from current device
+    await notificationService.deleteToken();
 
     await _auth.signOut();
-    if (!context.mounted) return;
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      AppRoutes.login,
-      (route) => false,
-    );
+    Get.offAllNamed(AppRoutes.login);
   }
 
   /// Show access denied dialog
-  void _showAccessDeniedDialog(BuildContext context) {
+  void _showAccessDeniedDialog() {
     showDialog(
-      context: context,
+      context: Get.context!,
       builder: (context) => AlertDialog(
         title: const Text('Access Denied'),
         content: const Text(
@@ -211,12 +202,12 @@ class RouteManager {
 
     if (userRole == null) {
       await _auth.signOut();
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      Get.toNamed(AppRoutes.login);
       return false;
     }
 
     if (!AppRoutes.isAccessibleByRole(route, userRole.value)) {
-      _showAccessDeniedDialog(context);
+      _showAccessDeniedDialog();
       return false;
     }
 
@@ -274,6 +265,6 @@ extension NavigationExtension on BuildContext {
   }
 
   Future<void> logout() {
-    return routeManager.logout(this);
+    return routeManager.logout();
   }
 }

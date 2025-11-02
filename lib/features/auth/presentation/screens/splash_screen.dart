@@ -48,11 +48,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (userRole == null) {
         // User authenticated but no role found
-        try {
-          await NotificationService().deleteToken();
-        } catch (e) {
-          print('⚠️ Error deleting FCM token: $e');
-        }
+        await NotificationService().deleteToken();
+
         await FirebaseAuth.instance.signOut();
         Get.offAllNamed(AppRoutes.login);
         return;
