@@ -14,7 +14,10 @@ abstract class ComplaintRepository {
   });
 
   /// Get complaints for a specific user
-  Future<List<ComplaintEntity>> getUserComplaints(String userId);
+  Future<List<ComplaintEntity>> getCitizenComplaints(String userId);
+
+  /// Get complaints for a specific contractor
+  Future<List<ComplaintEntity>> getContractorComplaints(String contractorId);
 
   /// Get all complaints (for admin)
   Future<List<ComplaintEntity>> getAllComplaints();

@@ -109,18 +109,35 @@ class ComplaintRepositoryImpl implements ComplaintRepository {
   }
 
   @override
-  Future<List<ComplaintEntity>> getUserComplaints(String userId) async {
+  Future<List<ComplaintEntity>> getCitizenComplaints(String userId) async {
     final isOnline = await _isOnline();
 
     if (isOnline) {
       try {
-        return await remote.getUserComplaints(userId);
+        return await remote.getCitizenComplaints(userId);
       } catch (e) {
         // Fall back to local data
-        return await local.getUserComplaints(userId);
+        return await local.getCitizenComplaints(userId);
       }
     } else {
-      return await local.getUserComplaints(userId);
+      return await local.getCitizenComplaints(userId);
+    }
+  }
+
+  @override
+  Future<List<ComplaintEntity>> getContractorComplaints(
+      String contractorId) async {
+    final isOnline = await _isOnline();
+
+    if (isOnline) {
+      try {
+        return await remote.getContractorComplaints(contractorId);
+      } catch (e) {
+        // Fall back to local data
+        return await local.getContractorComplaints(contractorId);
+      }
+    } else {
+      return await local.getContractorComplaints(contractorId);
     }
   }
 

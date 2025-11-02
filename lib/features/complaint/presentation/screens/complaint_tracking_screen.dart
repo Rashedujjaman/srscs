@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:srscs/core/constants/user_roles.dart';
+import 'package:srscs/services/auth_service.dart';
 import '../../domain/entities/complaint_entity.dart';
 import '../providers/complaint_provider.dart';
 import 'complaint_detail_screen.dart';
@@ -26,9 +28,16 @@ class _ComplaintTrackingScreenState extends State<ComplaintTrackingScreen> {
 
   Future<void> _loadComplaints() async {
     final user = FirebaseAuth.instance.currentUser;
+
     if (user != null) {
       final provider = Provider.of<ComplaintProvider>(context, listen: false);
-      await provider.loadUserComplaints(user.uid);
+      final userRole = await AuthService().getUserRole(user.uid);
+      if (userRole == UserRole.contractor) {
+        await provider.loadContractorComplaints(user.uid);
+        return;
+      } else {
+        await provider.loadCitizenComplaints(user.uid);
+      }
     }
   }
 

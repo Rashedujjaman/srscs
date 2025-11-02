@@ -31,7 +31,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   String? _collectionName;
   Color _primaryColor = const Color(0xFF9F7AEA);
   DatabaseReference? _chatStatusRef;
-  UserRole? _userRole;
   bool _hasChatMessages = false; // Track if chat has messages
 
   @override
@@ -137,29 +136,27 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         setState(() {
           _collectionName = 'citizens';
           _primaryColor = UserRoleExtension(UserRole.citizen).color;
-          _userRole = UserRole.citizen;
-          _chatStatusRef =
-              FirebaseDatabase.instance.ref('chats/${user.uid}/chatStatus');
+          _chatStatusRef = FirebaseDatabase.instance
+              .ref('citizen_chat_status/${user.uid}/chatStatus');
         });
         break;
       case UserRole.contractor:
         setState(() {
           _collectionName = 'contractors';
           _primaryColor = UserRoleExtension(UserRole.contractor).color;
-          _userRole = UserRole.contractor;
           _chatStatusRef = FirebaseDatabase.instance
-              .ref('contractor_chats/${user.uid}/chatStatus');
+              .ref('contractor_chat_status/${user.uid}/chatStatus');
         });
         break;
       default:
         setState(() {
           _collectionName = 'users';
           _primaryColor = Colors.grey;
-          _userRole = null;
           _chatStatusRef =
               FirebaseDatabase.instance.ref('chats/${user.uid}/chatStatus');
         });
     }
+    _setChatViewingStatus(true);
   }
 
   void _scrollToBottom() {

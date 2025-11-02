@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/complaint_entity.dart';
 import '../../domain/usecases/submit_complaint.dart';
-import '../../domain/usecases/get_user_complaints.dart';
+import '../../domain/usecases/get_citizen_complaints.dart';
+import '../../domain/usecases/get_contractor_complaints.dart';
 import '../../domain/usecases/sync_offline_complaints.dart';
 
 enum ComplaintState { idle, loading, success, error }
 
 class ComplaintProvider extends ChangeNotifier {
   final SubmitComplaint submitComplaintUsecase;
-  final GetUserComplaints getUserComplaintsUsecase;
+  final GetCitizenComplaints getCitizenComplaintsUsecase;
+  final GetContractorComplaints getContractorComplaintsUsecase;
   final SyncOfflineComplaints syncOfflineComplaintsUsecase;
 
   ComplaintProvider({
     required this.submitComplaintUsecase,
-    required this.getUserComplaintsUsecase,
+    required this.getCitizenComplaintsUsecase,
+    required this.getContractorComplaintsUsecase,
     required this.syncOfflineComplaintsUsecase,
   });
 
@@ -58,13 +61,29 @@ class ComplaintProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadUserComplaints(String userId) async {
+  Future<void> loadCitizenComplaints(String userId) async {
     state = ComplaintState.loading;
     errorMessage = null;
     notifyListeners();
 
     try {
-      complaints = await getUserComplaintsUsecase.call(userId);
+      complaints = await getCitizenComplaintsUsecase.call(userId);
+      state = ComplaintState.success;
+    } catch (e) {
+      errorMessage = e.toString();
+      state = ComplaintState.error;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadContractorComplaints(String contractorId) async {
+    state = ComplaintState.loading;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      complaints = await getContractorComplaintsUsecase.call(contractorId);
       state = ComplaintState.success;
     } catch (e) {
       errorMessage = e.toString();

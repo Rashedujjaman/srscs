@@ -103,7 +103,7 @@ class ComplaintLocalDataSource {
     }
   }
 
-  Future<List<ComplaintModel>> getUserComplaints(String userId) async {
+  Future<List<ComplaintModel>> getCitizenComplaints(String userId) async {
     try {
       final db = await database;
       final maps = await db.query(
@@ -114,9 +114,25 @@ class ComplaintLocalDataSource {
       );
       return maps.map((map) => ComplaintModel.fromMap(map)).toList();
     } catch (e) {
-      print('Error getting user complaints for userId $userId: $e');
       throw Exception(
-          'Failed to retrieve user complaints from local storage: ${e.toString()}');
+          'Failed to retrieve citizen complaints from local storage: ${e.toString()}');
+    }
+  }
+
+  Future<List<ComplaintModel>> getContractorComplaints(
+      String contractorId) async {
+    try {
+      final db = await database;
+      final maps = await db.query(
+        tableName,
+        where: 'userId = ?',
+        whereArgs: [contractorId],
+        orderBy: 'createdAt DESC',
+      );
+      return maps.map((map) => ComplaintModel.fromMap(map)).toList();
+    } catch (e) {
+      throw Exception(
+          'Failed to retrieve citizen complaints from local storage: ${e.toString()}');
     }
   }
 

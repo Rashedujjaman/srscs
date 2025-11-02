@@ -52,7 +52,8 @@ import 'features/complaint/data/datasources/complaint_local_data_source.dart';
 import 'features/complaint/data/datasources/complaint_remote_data_source.dart';
 import 'features/complaint/data/repositories/complaint_repository_impl.dart';
 import 'features/complaint/domain/usecases/submit_complaint.dart';
-import 'features/complaint/domain/usecases/get_user_complaints.dart';
+import 'features/complaint/domain/usecases/get_citizen_complaints.dart';
+import 'features/complaint/domain/usecases/get_contractor_complaints.dart';
 import 'features/complaint/domain/usecases/sync_offline_complaints.dart';
 import 'features/complaint/presentation/providers/complaint_provider.dart';
 
@@ -141,7 +142,10 @@ class MyApp extends StatelessWidget {
       connectivity: Connectivity(),
     );
     final submitComplaintUsecase = SubmitComplaint(complaintRepo);
-    final getUserComplaintsUsecase = GetUserComplaints(complaintRepo);
+    final getCitizenComplaintsUsecase = GetCitizenComplaints(complaintRepo);
+    final getContractorComplaintsUsecase =
+        GetContractorComplaints(complaintRepo);
+
     final syncOfflineComplaintsUsecase = SyncOfflineComplaints(complaintRepo);
 
     // Chat dependencies
@@ -186,7 +190,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => ComplaintProvider(
             submitComplaintUsecase: submitComplaintUsecase,
-            getUserComplaintsUsecase: getUserComplaintsUsecase,
+            getCitizenComplaintsUsecase: getCitizenComplaintsUsecase,
+            getContractorComplaintsUsecase: getContractorComplaintsUsecase,
             syncOfflineComplaintsUsecase: syncOfflineComplaintsUsecase,
           ),
         ),

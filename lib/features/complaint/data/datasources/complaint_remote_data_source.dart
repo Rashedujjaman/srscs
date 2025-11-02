@@ -57,8 +57,8 @@ class ComplaintRemoteDataSource {
     }
   }
 
-  /// Get user complaints
-  Future<List<ComplaintModel>> getUserComplaints(String userId) async {
+  /// Get citizen complaints
+  Future<List<ComplaintModel>> getCitizenComplaints(String userId) async {
     try {
       final snapshot = await firestore
           .collection('complaints')
@@ -70,8 +70,25 @@ class ComplaintRemoteDataSource {
           .map((doc) => ComplaintModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('Error in getUserComplaints for userId $userId: $e');
       throw Exception('Failed to fetch user complaints: ${e.toString()}');
+    }
+  }
+
+  /// Get Contractor complaints
+  Future<List<ComplaintModel>> getContractorComplaints(
+      String contractorId) async {
+    try {
+      final snapshot = await firestore
+          .collection('complaints')
+          .where('assignedTo', isEqualTo: contractorId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => ComplaintModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to fetch contractor complaints: ${e.toString()}');
     }
   }
 
