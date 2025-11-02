@@ -103,31 +103,6 @@ class AdminRemoteDataSource {
     }
   }
 
-  /// Update complaint status
-  Future<void> updateComplaintStatus({
-    required String complaintId,
-    required ComplaintStatus status,
-    String? adminNotes,
-  }) async {
-    try {
-      final updateData = {
-        'status': status.value,
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
-
-      if (adminNotes != null) {
-        updateData['adminNotes'] = adminNotes;
-      }
-
-      await firestore
-          .collection('complaints')
-          .doc(complaintId)
-          .update(updateData);
-    } catch (e) {
-      throw Exception('Failed to update complaint status: $e');
-    }
-  }
-
   /// Get complaint by ID
   Future<Map<String, dynamic>?> getComplaintById(String complaintId) async {
     try {

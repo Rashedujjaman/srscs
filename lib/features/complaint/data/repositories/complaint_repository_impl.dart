@@ -162,6 +162,11 @@ class ComplaintRepositoryImpl implements ComplaintRepository {
   }
 
   @override
+  Future<void> clearAssignment(String complaintId) {
+    return remote.clearAssignment(complaintId);
+  }
+
+  @override
   Future<void> syncOfflineComplaints() async {
     final isOnline = await _isOnline();
     if (!isOnline) return;

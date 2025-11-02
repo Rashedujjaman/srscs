@@ -1,8 +1,8 @@
-import '../repositories/admin_repository.dart';
+import 'package:srscs/features/complaint/domain/repositories/complaint_repository.dart';
 
 /// Clears the assignment for a specific complaint
 class ClearAssignment {
-  final AdminRepository repository;
+  final ComplaintRepository repository;
 
   ClearAssignment(this.repository);
 

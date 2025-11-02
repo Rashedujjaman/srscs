@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:provider/provider.dart';
+import 'package:srscs/features/complaint/presentation/providers/complaint_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -763,21 +765,24 @@ class _ContractorTaskDetailScreenState
   }
 
   Future<void> _completeTask(String complaintId) async {
+    final complaintProvider =
+        Provider.of<ComplaintProvider>(context, listen: false);
     setState(() => _isUpdating = true);
 
     try {
-      await _firestore.collection('complaints').doc(complaintId).update({
-        'status': ComplaintStatus.resolved.value,
-        'completedAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task marked as complete'),
-          backgroundColor: Colors.green,
-        ),
+      await complaintProvider.updateComplaintStatus(
+        complaintId: complaintId,
+        status: ComplaintStatus.resolved,
       );
+
+      !mounted
+          ? null
+          : ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Task marked as complete'),
+                backgroundColor: Colors.green,
+              ),
+            );
 
       // Navigate back
       Get.back();

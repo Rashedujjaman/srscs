@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:srscs/features/admin/domain/usecases/clear_assignment.dart';
 import '../../domain/usecases/get_all_complaints.dart';
 import '../../domain/usecases/get_dashboard_statistics.dart';
-import '../../domain/usecases/update_complaint_status.dart';
 import '../../../complaint/domain/entities/complaint_entity.dart';
 
 /// Admin Provider
@@ -11,14 +9,10 @@ import '../../../complaint/domain/entities/complaint_entity.dart';
 class AdminProvider with ChangeNotifier {
   final GetAllComplaints getAllComplaintsUseCase;
   final GetDashboardStatistics getDashboardStatisticsUseCase;
-  final UpdateComplaintStatus updateComplaintStatusUseCase;
-  final ClearAssignment clearAssignmentUseCase;
 
   AdminProvider({
     required this.getAllComplaintsUseCase,
     required this.getDashboardStatisticsUseCase,
-    required this.updateComplaintStatusUseCase,
-    required this.clearAssignmentUseCase,
   });
 
   // State
@@ -67,49 +61,6 @@ class AdminProvider with ChangeNotifier {
   /// Stream all complaints
   Stream<List<ComplaintEntity>> streamAllComplaints() {
     return getAllComplaintsUseCase();
-  }
-
-  /// Update complaint status
-  Future<bool> updateStatus({
-    required String complaintId,
-    required ComplaintStatus status,
-    String? adminNotes,
-  }) async {
-    try {
-      await updateComplaintStatusUseCase(
-        complaintId: complaintId,
-        status: status,
-        adminNotes: adminNotes,
-      );
-
-      // Reload statistics after update
-      await loadStatistics();
-
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      debugPrint('Error updating complaint status: $e');
-      notifyListeners();
-      return false;
-    }
-  }
-
-  /// Clear assignment for a complaint
-  /// Used when rejecting a complaint
-  Future<bool> clearAssignment(String complaintId) async {
-    try {
-      await clearAssignmentUseCase(complaintId);
-
-      // Reload statistics after update
-      await loadStatistics();
-
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      debugPrint('Error clearing assignment: $e');
-      notifyListeners();
-      return false;
-    }
   }
 
   /// Filter complaints by status

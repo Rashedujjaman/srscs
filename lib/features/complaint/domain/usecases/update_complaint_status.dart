@@ -1,12 +1,11 @@
 import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
-
-import '../repositories/admin_repository.dart';
+import 'package:srscs/features/complaint/domain/repositories/complaint_repository.dart';
 
 /// Update Complaint Status Use Case
 ///
 /// Updates the status of a complaint with admin notes
 class UpdateComplaintStatus {
-  final AdminRepository repository;
+  final ComplaintRepository repository;
 
   UpdateComplaintStatus(this.repository);
 

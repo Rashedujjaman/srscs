@@ -26,25 +26,7 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<void> updateComplaintStatus({
-    required String complaintId,
-    required ComplaintStatus status,
-    String? adminNotes,
-  }) {
-    return remoteDataSource.updateComplaintStatus(
-      complaintId: complaintId,
-      status: status,
-      adminNotes: adminNotes,
-    );
-  }
-
-  @override
   Future<Map<String, dynamic>?> getComplaintById(String complaintId) {
     return remoteDataSource.getComplaintById(complaintId);
-  }
-
-  @override
-  Future<void> clearAssignment(String complaintId) {
-    return remoteDataSource.clearAssignment(complaintId);
   }
 }

@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:srscs/features/complaint/domain/usecases/clear_assignment.dart';
+import 'package:srscs/features/complaint/domain/usecases/update_complaint_status.dart';
 import 'package:srscs/features/complaint/presentation/screens/complaint_detail_screen.dart';
 import 'firebase_options.dart';
 
@@ -80,8 +82,6 @@ import 'features/admin/domain/usecases/get_all_complaints.dart'
     as admin_usecases;
 import 'features/admin/domain/usecases/get_dashboard_statistics.dart'
     as admin_usecases;
-import 'features/admin/domain/usecases/update_complaint_status.dart'
-    as admin_usecases;
 import 'features/admin/presentation/providers/admin_provider.dart';
 
 // Contractor
@@ -145,7 +145,8 @@ class MyApp extends StatelessWidget {
     final getCitizenComplaintsUsecase = GetCitizenComplaints(complaintRepo);
     final getContractorComplaintsUsecase =
         GetContractorComplaints(complaintRepo);
-
+    final updateComplaintStatusUsecase = UpdateComplaintStatus(complaintRepo);
+    final clearAssignmentUsecase = ClearAssignment(complaintRepo);
     final syncOfflineComplaintsUsecase = SyncOfflineComplaints(complaintRepo);
 
     // Chat dependencies
@@ -178,8 +179,6 @@ class MyApp extends StatelessWidget {
     final getAllComplaintsUsecase = admin_usecases.GetAllComplaints(adminRepo);
     final getAdminDashboardStatisticsUsecase =
         admin_usecases.GetDashboardStatistics(adminRepo);
-    final updateComplaintStatusUsecase =
-        admin_usecases.UpdateComplaintStatus(adminRepo);
 
     return MultiProvider(
       providers: [
@@ -190,8 +189,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => ComplaintProvider(
             submitComplaintUsecase: submitComplaintUsecase,
+            updateComplaintStatusUsecase: updateComplaintStatusUsecase,
             getCitizenComplaintsUsecase: getCitizenComplaintsUsecase,
             getContractorComplaintsUsecase: getContractorComplaintsUsecase,
+            clearAssignmentUseCase: clearAssignmentUsecase,
             syncOfflineComplaintsUsecase: syncOfflineComplaintsUsecase,
           ),
         ),
@@ -221,7 +222,6 @@ class MyApp extends StatelessWidget {
           create: (_) => AdminProvider(
             getAllComplaintsUseCase: getAllComplaintsUsecase,
             getDashboardStatisticsUseCase: getAdminDashboardStatisticsUsecase,
-            updateComplaintStatusUseCase: updateComplaintStatusUsecase,
           ),
         ),
       ],

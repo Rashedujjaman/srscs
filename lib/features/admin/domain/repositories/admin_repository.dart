@@ -12,16 +12,6 @@ abstract class AdminRepository {
   /// Get dashboard statistics
   Future<Map<String, dynamic>> getDashboardStatistics();
 
-  /// Update complaint status
-  Future<void> updateComplaintStatus({
-    required String complaintId,
-    required ComplaintStatus status,
-    String? adminNotes,
-  });
-
   /// Get complaint by ID
   Future<Map<String, dynamic>?> getComplaintById(String complaintId);
-
-  /// Clear assignment for a specific complaint
-  Future<void> clearAssignment(String complaintId);
 }

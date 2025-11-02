@@ -30,6 +30,9 @@ abstract class ComplaintRepository {
     String? assignedTo,
   });
 
+  /// Clear assignment for a specific complaint
+  Future<void> clearAssignment(String complaintId);
+
   /// Sync offline complaints to server
   Future<void> syncOfflineComplaints();
 

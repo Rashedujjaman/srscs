@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:srscs/features/admin/presentation/providers/admin_provider.dart';
+import 'package:srscs/features/complaint/presentation/providers/complaint_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -776,11 +776,12 @@ class _AdminComplaintDetailScreenState
   }
 
   Future<void> _updateStatus(String complaintId, ComplaintStatus status) async {
-    final adminProvider = Provider.of<AdminProvider>(context, listen: false);
+    final complaintProvider =
+        Provider.of<ComplaintProvider>(context, listen: false);
     setState(() => _isUpdating = true);
 
     try {
-      final result = await adminProvider.updateStatus(
+      final result = await complaintProvider.updateComplaintStatus(
           complaintId: complaintId, status: status);
       if (!result) {
         throw Exception('Failed to update status');
@@ -788,7 +789,7 @@ class _AdminComplaintDetailScreenState
 
       if (status == ComplaintStatus.rejected) {
         // If rejected, also clear assignment
-        adminProvider.clearAssignment(complaintId);
+        complaintProvider.clearAssignment(complaintId);
       }
 
       if (mounted) {
