@@ -23,19 +23,20 @@ class ComplaintDetailScreen extends StatefulWidget {
 
 class _ComplaintDetailScreenState extends State<ComplaintDetailScreen> {
   ComplaintEntity? complaint;
-  String? complaintId;
+  String? _complaintId;
 
   @override
   void initState() {
     super.initState();
     complaint = widget.complaint;
-    complaintId = complaint?.id ?? Get.arguments as String?;
+    final args = Get.arguments as Map<String, dynamic>?;
+    _complaintId = args?['complaintId'];
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<AppThemeProvider>(context, listen: false);
-    if (complaintId == null) {
+    if (_complaintId == null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Complaint Details'),
@@ -49,7 +50,7 @@ class _ComplaintDetailScreenState extends State<ComplaintDetailScreen> {
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('complaints')
-          .doc(complaintId)
+          .doc(_complaintId)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {

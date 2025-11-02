@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:srscs/core/constants/user_roles.dart';
+import 'package:srscs/core/routes/app_routes.dart';
+import 'package:srscs/core/routes/route_manager.dart';
+import 'package:srscs/core/theme/app_theme_provider.dart';
 import 'package:srscs/services/auth_service.dart';
 import '../../domain/entities/complaint_entity.dart';
 import '../providers/complaint_provider.dart';
@@ -17,6 +20,7 @@ class ComplaintTrackingScreen extends StatefulWidget {
 }
 
 class _ComplaintTrackingScreenState extends State<ComplaintTrackingScreen> {
+  UserRole? userRole;
   @override
   void initState() {
     super.initState();
@@ -31,7 +35,7 @@ class _ComplaintTrackingScreenState extends State<ComplaintTrackingScreen> {
 
     if (user != null) {
       final provider = Provider.of<ComplaintProvider>(context, listen: false);
-      final userRole = await AuthService().getUserRole(user.uid);
+      userRole = await AuthService().getUserRole(user.uid);
       if (userRole == UserRole.contractor) {
         await provider.loadContractorComplaints(user.uid);
         return;
@@ -45,11 +49,12 @@ class _ComplaintTrackingScreenState extends State<ComplaintTrackingScreen> {
   Widget build(BuildContext context) {
     final provider = Provider.of<ComplaintProvider>(context);
     final isLoading = provider.state == ComplaintState.loading;
+    final theme = Provider.of<AppThemeProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Complaints'),
-        backgroundColor: const Color(0xFF9F7AEA),
+        backgroundColor: theme.primaryColor,
         actions: [
           IconButton(
             icon: const Icon(Icons.sync),
@@ -98,12 +103,21 @@ class _ComplaintTrackingScreenState extends State<ComplaintTrackingScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ComplaintDetailScreen(complaint: complaint),
-            ),
-          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (context) => ComplaintDetailScreen(complaint: complaint),
+          //   ),
+          // );
+          if (userRole == UserRole.citizen) {
+            RouteManager().navigateWithRoleCheck(
+                context, AppRoutes.complaintDetail,
+                arguments: {'complaintId': complaint.id});
+          } else if (userRole == UserRole.contractor) {
+            RouteManager().navigateWithRoleCheck(
+                context, AppRoutes.contractorTaskDetail,
+                arguments: {'complaintId': complaint.id});
+          }
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -219,55 +233,14 @@ class _ComplaintTrackingScreenState extends State<ComplaintTrackingScreen> {
   }
 
   Widget _buildStatusChip(ComplaintStatus status) {
-    Color color;
-    IconData icon;
-
-    switch (status) {
-      case ComplaintStatus.pending:
-        color = Colors.orange;
-        icon = Icons.schedule;
-        break;
-      case ComplaintStatus.underReview:
-        color = Colors.blue;
-        icon = Icons.rate_review;
-        break;
-      case ComplaintStatus.inProgress:
-        color = Colors.purple;
-        icon = Icons.construction;
-        break;
-      case ComplaintStatus.resolved:
-        color = Colors.green;
-        icon = Icons.check_circle;
-        break;
-      case ComplaintStatus.rejected:
-        color = Colors.red;
-        icon = Icons.cancel;
-        break;
-    }
-
     return Chip(
-      avatar: Icon(icon, size: 16, color: Colors.white),
+      avatar: Icon(status.icon, size: 16, color: Colors.white),
       label: Text(
-        _getStatusText(status),
+        status.displayName,
         style: const TextStyle(color: Colors.white, fontSize: 12),
       ),
-      backgroundColor: color,
+      backgroundColor: status.color,
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
     );
-  }
-
-  String _getStatusText(ComplaintStatus status) {
-    switch (status) {
-      case ComplaintStatus.pending:
-        return 'Pending';
-      case ComplaintStatus.underReview:
-        return 'Under Review';
-      case ComplaintStatus.inProgress:
-        return 'In Progress';
-      case ComplaintStatus.resolved:
-        return 'Resolved';
-      case ComplaintStatus.rejected:
-        return 'Rejected';
-    }
   }
 }
