@@ -15,10 +15,13 @@ abstract class AdminRepository {
   /// Update complaint status
   Future<void> updateComplaintStatus({
     required String complaintId,
-    required String status,
+    required ComplaintStatus status,
     String? adminNotes,
   });
 
   /// Get complaint by ID
   Future<Map<String, dynamic>?> getComplaintById(String complaintId);
+
+  /// Clear assignment for a specific complaint
+  Future<void> clearAssignment(String complaintId);
 }

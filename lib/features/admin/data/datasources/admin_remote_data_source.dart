@@ -106,12 +106,12 @@ class AdminRemoteDataSource {
   /// Update complaint status
   Future<void> updateComplaintStatus({
     required String complaintId,
-    required String status,
+    required ComplaintStatus status,
     String? adminNotes,
   }) async {
     try {
       final updateData = {
-        'status': status,
+        'status': status.value,
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
@@ -143,6 +143,19 @@ class AdminRemoteDataSource {
       return data;
     } catch (e) {
       throw Exception('Failed to get complaint: $e');
+    }
+  }
+
+  /// Clear assignment for a complaint
+  Future<void> clearAssignment(String complaintId) async {
+    try {
+      await firestore.collection('complaints').doc(complaintId).update({
+        'assignedTo': null,
+        'assignedBy': null,
+        'assignedAt': null,
+      });
+    } catch (e) {
+      throw Exception('Failed to clear assignment: $e');
     }
   }
 }

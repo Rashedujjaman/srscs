@@ -8,6 +8,7 @@ class UserEntity {
   final String? imageUrl;
   final String? phoneNumber;
   final String? email;
+  final int? honorScore;
 
   UserEntity({
     required this.id,
@@ -19,6 +20,7 @@ class UserEntity {
     this.imageUrl,
     this.phoneNumber,
     this.email,
+    this.honorScore,
   });
 }
 

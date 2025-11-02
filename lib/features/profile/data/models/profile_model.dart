@@ -14,6 +14,7 @@ class ProfileModel extends ProfileEntity {
     super.profilePhotoUrl,
     super.updatedAt,
     super.role,
+    super.honorScore,
   });
 
   factory ProfileModel.fromFirestore(DocumentSnapshot doc) {
@@ -33,6 +34,7 @@ class ProfileModel extends ProfileEntity {
           ? (data['updatedAt'] as Timestamp).toDate()
           : null,
       role: data['role'] ?? 'citizen',
+      honorScore: data['honorScore'],
     );
   }
 
@@ -48,6 +50,7 @@ class ProfileModel extends ProfileEntity {
       'imageUrl': profilePhotoUrl,
       'updatedAt': FieldValue.serverTimestamp(),
       'role': role,
+      'honorScore': honorScore,
     };
   }
 
@@ -64,6 +67,7 @@ class ProfileModel extends ProfileEntity {
       profilePhotoUrl: entity.profilePhotoUrl,
       updatedAt: entity.updatedAt,
       role: entity.role,
+      honorScore: entity.honorScore,
     );
   }
 
@@ -79,19 +83,20 @@ class ProfileModel extends ProfileEntity {
     String? profilePhotoUrl,
     DateTime? updatedAt,
     String? role,
+    int? honorScore,
   }) {
     return ProfileModel(
-      id: id ?? this.id,
-      nid: nid ?? this.nid,
-      fullName: fullName ?? this.fullName,
-      email: email ?? this.email,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      address: address ?? this.address,
-      bloodGroup: bloodGroup ?? this.bloodGroup,
-      dob: dob ?? this.dob,
-      profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
-      updatedAt: updatedAt ?? this.updatedAt,
-      role: role ?? this.role,
-    );
+        id: id ?? this.id,
+        nid: nid ?? this.nid,
+        fullName: fullName ?? this.fullName,
+        email: email ?? this.email,
+        phoneNumber: phoneNumber ?? this.phoneNumber,
+        address: address ?? this.address,
+        bloodGroup: bloodGroup ?? this.bloodGroup,
+        dob: dob ?? this.dob,
+        profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
+        updatedAt: updatedAt ?? this.updatedAt,
+        role: role ?? this.role,
+        honorScore: honorScore ?? this.honorScore);
   }
 }

@@ -372,12 +372,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (userRole != null)
             _buildInfoTile(
                 Icons.security, 'Role', userRole!.displayName.toUpperCase()),
+          if (profile.honorScore != null) ...[
+            _buildInfoTile(
+              Icons.star,
+              'Honor Score',
+              profile.honorScore!.toString(),
+              color: profile.honorScore! >= 80
+                  ? Colors.green
+                  : (profile.honorScore! >= 50 ? Colors.orange : Colors.red),
+            ),
+          ]
         ],
       ),
     );
   }
 
-  Widget _buildInfoTile(IconData icon, String label, String? value) {
+  Widget _buildInfoTile(IconData icon, String label, String? value,
+      {Color? color}) {
     final theme = Provider.of<AppThemeProvider>(context, listen: false);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -406,9 +417,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 2),
                 Text(
                   value ?? 'Not specified',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
+                    color: color ?? Colors.black,
                   ),
                 ),
               ],

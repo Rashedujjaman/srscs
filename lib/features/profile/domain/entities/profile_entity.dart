@@ -10,6 +10,7 @@ class ProfileEntity {
   final String? profilePhotoUrl;
   final DateTime? updatedAt;
   final String? role; // 'citizen', 'contractor', 'admin'
+  final int? honorScore;
 
   ProfileEntity({
     required this.id,
@@ -23,5 +24,6 @@ class ProfileEntity {
     this.profilePhotoUrl,
     this.updatedAt,
     this.role,
+    this.honorScore,
   });
 }

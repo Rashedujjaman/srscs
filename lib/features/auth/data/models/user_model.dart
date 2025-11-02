@@ -12,20 +12,23 @@ class UserModel extends UserEntity {
     super.imageUrl,
     super.phoneNumber,
     super.email,
+    super.honorScore,
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     return UserModel(
-        id: doc.id,
-        nid: data['nid']?.toString() ?? '',
-        fullName: data['fullName'] ?? '',
-        dob: data['dob'],
-        address: data['address'],
-        bloodGroup: data['bloodGroup'],
-        imageUrl: data['imageUrl'],
-        phoneNumber: data['phoneNumber'],
-        email: data['email']);
+      id: doc.id,
+      nid: data['nid']?.toString() ?? '',
+      fullName: data['fullName'] ?? '',
+      dob: data['dob'],
+      address: data['address'],
+      bloodGroup: data['bloodGroup'],
+      imageUrl: data['imageUrl'],
+      phoneNumber: data['phoneNumber'],
+      email: data['email'],
+      honorScore: (data['honorScore']),
+    );
   }
 
   Map<String, dynamic> toFirestore() {
@@ -38,6 +41,7 @@ class UserModel extends UserEntity {
       'imageUrl': imageUrl,
       'phoneNumber': phoneNumber,
       'email': email,
+      'honorScore': honorScore,
     };
   }
 }

@@ -9,7 +9,6 @@ import 'package:srscs/core/theme/app_theme_provider.dart';
 import 'package:srscs/services/auth_service.dart';
 import '../../domain/entities/complaint_entity.dart';
 import '../providers/complaint_provider.dart';
-import 'complaint_detail_screen.dart';
 
 class ComplaintTrackingScreen extends StatefulWidget {
   const ComplaintTrackingScreen({super.key});

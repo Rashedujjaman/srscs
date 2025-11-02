@@ -1,3 +1,5 @@
+import 'package:srscs/features/complaint/domain/entities/complaint_entity.dart';
+
 import '../repositories/admin_repository.dart';
 
 /// Update Complaint Status Use Case
@@ -10,7 +12,7 @@ class UpdateComplaintStatus {
 
   Future<void> call({
     required String complaintId,
-    required String status,
+    required ComplaintStatus status,
     String? adminNotes,
   }) {
     return repository.updateComplaintStatus(

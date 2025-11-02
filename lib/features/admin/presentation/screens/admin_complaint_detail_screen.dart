@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'package:srscs/features/admin/presentation/providers/admin_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -774,16 +776,20 @@ class _AdminComplaintDetailScreenState
   }
 
   Future<void> _updateStatus(String complaintId, ComplaintStatus status) async {
+    final adminProvider = Provider.of<AdminProvider>(context, listen: false);
     setState(() => _isUpdating = true);
 
     try {
-      await FirebaseFirestore.instance
-          .collection('complaints')
-          .doc(complaintId)
-          .update({
-        'status': status.value,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      final result = await adminProvider.updateStatus(
+          complaintId: complaintId, status: status);
+      if (!result) {
+        throw Exception('Failed to update status');
+      }
+
+      if (status == ComplaintStatus.rejected) {
+        // If rejected, also clear assignment
+        adminProvider.clearAssignment(complaintId);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

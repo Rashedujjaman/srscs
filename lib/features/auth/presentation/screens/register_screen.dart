@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:srscs/core/routes/app_routes.dart';
 import 'package:srscs/features/auth/data/models/user_model.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -49,6 +50,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final newUserData = citizenData.toFirestore();
       newUserData['phoneNumber'] = phone;
       newUserData['email'] = email;
+      newUserData['createdAt'] = FieldValue.serverTimestamp();
+      newUserData['role'] = 'citizen';
+      newUserData['honorScore'] = 100;
 
       // Step 3: Save Firestore user data
       await FirebaseFirestore.instance
@@ -61,8 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       _showMessage("Registration successful! Please verify your email.");
       await Future.delayed(const Duration(seconds: 2));
-
-      if (mounted) Get.offAllNamed('/login');
+      Get.offAllNamed(AppRoutes.login);
     } catch (e) {
       // Rollback Firebase user if Firestore write fails
       if (authResult?.user != null) {
