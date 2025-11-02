@@ -50,6 +50,25 @@ extension ComplaintTypeExtension on ComplaintType {
         return 'other';
     }
   }
+
+  IconData get icon {
+    switch (this) {
+      case ComplaintType.pothole:
+        return Icons.warning;
+      case ComplaintType.brokenSign:
+        return Icons.broken_image;
+      case ComplaintType.streetlight:
+        return Icons.lightbulb;
+      case ComplaintType.drainage:
+        return Icons.water_damage;
+      case ComplaintType.roadCrack:
+        return Icons.call_split;
+      case ComplaintType.accident:
+        return Icons.car_crash;
+      case ComplaintType.other:
+        return Icons.more_horiz;
+    }
+  }
 }
 
 extension ComplaintStatusExtension on ComplaintStatus {

@@ -460,10 +460,10 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
                     value: type,
                     child: Row(
                       children: [
-                        Icon(_getTypeIcon(type),
+                        Icon(type.icon,
                             size: 20, color: const Color(0xFF9F7AEA)),
                         const SizedBox(width: 12),
-                        Text(_getTypeText(type)),
+                        Text(type.displayName),
                       ],
                     ),
                   ))
@@ -916,43 +916,5 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
         ),
       ),
     );
-  }
-
-  IconData _getTypeIcon(ComplaintType type) {
-    switch (type) {
-      case ComplaintType.pothole:
-        return Icons.warning;
-      case ComplaintType.brokenSign:
-        return Icons.broken_image;
-      case ComplaintType.streetlight:
-        return Icons.lightbulb;
-      case ComplaintType.drainage:
-        return Icons.water_damage;
-      case ComplaintType.roadCrack:
-        return Icons.call_split;
-      case ComplaintType.accident:
-        return Icons.car_crash;
-      case ComplaintType.other:
-        return Icons.more_horiz;
-    }
-  }
-
-  String _getTypeText(ComplaintType type) {
-    switch (type) {
-      case ComplaintType.pothole:
-        return 'Pothole';
-      case ComplaintType.brokenSign:
-        return 'Broken Sign';
-      case ComplaintType.streetlight:
-        return 'Streetlight';
-      case ComplaintType.drainage:
-        return 'Drainage';
-      case ComplaintType.roadCrack:
-        return 'Road Crack';
-      case ComplaintType.accident:
-        return 'Accident';
-      case ComplaintType.other:
-        return 'Other';
-    }
   }
 }
