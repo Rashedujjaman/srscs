@@ -189,26 +189,25 @@ class _AdminComplaintDetailScreenState
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color:
-                      _getStatusColor(complaint.status).withValues(alpha: 0.2),
+                  color: complaint.status.color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: _getStatusColor(complaint.status)),
+                  border: Border.all(color: complaint.status.color),
                 ),
                 child: Text(
-                  _getStatusText(complaint.status),
+                  complaint.status.displayName,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: _getStatusColor(complaint.status),
+                    color: complaint.status.color,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              Icon(_getTypeIcon(complaint.type), size: 24, color: adminColor),
+              Icon(complaint.type.icon, size: 24, color: adminColor),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  _getTypeText(complaint.type),
+                  complaint.type.displayName,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -503,17 +502,17 @@ class _AdminComplaintDetailScreenState
             children: ComplaintStatus.values.map((status) {
               final isSelected = complaint.status == status;
               return ChoiceChip(
-                label: Text(_getStatusText(status)),
+                label: Text(status.displayName),
                 selected: isSelected,
                 onSelected: (selected) {
                   if (selected && !isSelected) {
                     _updateStatus(complaint.id, status);
                   }
                 },
-                selectedColor: _getStatusColor(status).withValues(alpha: 0.3),
+                selectedColor: status.color.withValues(alpha: 0.3),
                 backgroundColor: Colors.grey[200],
                 labelStyle: TextStyle(
-                  color: isSelected ? _getStatusColor(status) : Colors.black87,
+                  color: isSelected ? status.color : Colors.black87,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               );
@@ -789,7 +788,7 @@ class _AdminComplaintDetailScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Status updated to ${_getStatusText(status)}'),
+            content: Text('Status updated to ${status.displayName}'),
             backgroundColor: Colors.green[600],
           ),
         );
@@ -1111,74 +1110,6 @@ class _AdminComplaintDetailScreenState
           ),
         );
       }
-    }
-  }
-
-  Color _getStatusColor(ComplaintStatus status) {
-    switch (status) {
-      case ComplaintStatus.pending:
-        return Colors.orange;
-      case ComplaintStatus.underReview:
-        return Colors.blue;
-      case ComplaintStatus.inProgress:
-        return Colors.purple;
-      case ComplaintStatus.resolved:
-        return Colors.green;
-      case ComplaintStatus.rejected:
-        return Colors.red;
-    }
-  }
-
-  String _getStatusText(ComplaintStatus status) {
-    switch (status) {
-      case ComplaintStatus.pending:
-        return 'Pending';
-      case ComplaintStatus.underReview:
-        return 'Under Review';
-      case ComplaintStatus.inProgress:
-        return 'In Progress';
-      case ComplaintStatus.resolved:
-        return 'Resolved';
-      case ComplaintStatus.rejected:
-        return 'Rejected';
-    }
-  }
-
-  String _getTypeText(ComplaintType type) {
-    switch (type) {
-      case ComplaintType.pothole:
-        return 'Pothole';
-      case ComplaintType.brokenSign:
-        return 'Broken Sign';
-      case ComplaintType.streetlight:
-        return 'Streetlight';
-      case ComplaintType.drainage:
-        return 'Drainage';
-      case ComplaintType.roadCrack:
-        return 'Road Crack';
-      case ComplaintType.accident:
-        return 'Accident';
-      case ComplaintType.other:
-        return 'Other';
-    }
-  }
-
-  IconData _getTypeIcon(ComplaintType type) {
-    switch (type) {
-      case ComplaintType.pothole:
-        return Icons.warning;
-      case ComplaintType.brokenSign:
-        return Icons.broken_image;
-      case ComplaintType.streetlight:
-        return Icons.lightbulb;
-      case ComplaintType.drainage:
-        return Icons.water_damage;
-      case ComplaintType.roadCrack:
-        return Icons.call_split;
-      case ComplaintType.accident:
-        return Icons.car_crash;
-      case ComplaintType.other:
-        return Icons.more_horiz;
     }
   }
 }
